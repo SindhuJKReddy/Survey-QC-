@@ -73,7 +73,7 @@ export class ViewCharts {
 
   private fetchSurveysAndRender(wellboreId: string): void {
 
-    console.log("Calling survey API with:", wellboreId);
+    console.log("Calling Survey API with:", wellboreId);
 
     this.communicationService.getWellboreSurveys(wellboreId).subscribe({
 
