@@ -1,0 +1,120 @@
+
+<div class="dashboard">
+  <div class="dashboard-grid">
+    <div class="dashboard-card" *ngFor="let well of commonService.filteredWellBoreArr">
+      <div class="single-card default-card">
+       
+        <div class="card-header">
+          <h3 class="rig-name" [title]="well.wellboreInfo?.wellboreId?.value">
+            {{ well.wellboreInfo?.wellboreId?.value }}
+          </h3>
+ 
+          <div class="view-survey">
+            <p-button
+              label="MSA"
+              size="small"
+              pTooltip="Run MSA"
+              tooltipPosition="top"
+              (onClick)="InitiateRunMSA(well)"
+              styleClass="msa-btn">
+            </p-button>
+ 
+            <span (click)="commonService.viewWellboreReport(well)" class="cursor-pointer">
+              <img src="outline/file-pdf.png" alt="Report" pTooltip="View Report" tooltipPosition="top">
+            </span>
+ 
+            <span (click)="commonService.viewWellboreCharts(well.wellboreInfo.wellboreId.value)" class="cursor-pointer">
+              <img src="outline/area-chart.png" alt="Chart" pTooltip="View Chart" tooltipPosition="top">
+            </span>
+ 
+            <span (click)="commonService.viewWellboreSurveys(well.wellboreInfo.wellboreId.value)" class="cursor-pointer">
+              <img src="outline/eye.png" alt="Surveys" pTooltip="View Surveys" tooltipPosition="top">
+            </span>
+          </div>
+        </div>
+ 
+        <div class="card-content">
+          <div class="info-container">
+            <div class="flex">
+              <div class="icon-info"
+                   *ngIf="well.wellboreInfo?.serviceCompanyInfos?.length"
+                   [pTooltip]="getAllServiceCompanyNames(well.wellboreInfo?.serviceCompanyInfos)"
+                   tooltipPosition="top">
+                <span class="icon-small">
+                  <img src="outline/shop.png" alt="Shop">
+                </span>
+                <span *ngIf="well.wellboreInfo.serviceCompanyInfos.length === 1">
+                  {{ commonService.formatName(well.wellboreInfo.serviceCompanyInfos[0]?.name) }}
+                </span>
+                <span *ngIf="well.wellboreInfo.serviceCompanyInfos.length > 1" class="truncate-text">
+                  {{ commonService.formatName(well.wellboreInfo.serviceCompanyInfos[0]?.name) }} +
+                  {{ well.wellboreInfo.serviceCompanyInfos.length - 1 }} others
+                </span>
+              </div>
+            </div>
+ 
+            <div class="icon-info">
+              <span class="icon-small"><img src="outline/clock-circle.png" alt="Time"></span>
+              <span>{{ commonService.getFormattedDate(well.lastSurveyReceivedTime) | date: 'dd/MM/yy HH:mm:ss' }}</span>
+            </div>
+           
+            <div class="icon-info">
+              <span class="icon-small"><img src="outline/global.png" alt="Lat"></span>
+              <span>Lat: {{ commonService.formatLatitude(well.wellboreInfo.latitude.value) }}</span>
+            </div>
+           
+            <div class="icon-info">
+              <span class="icon-small"><img src="outline/global.png" alt="Long"></span>
+              <span>Long: {{ commonService.formatLongitude(well.wellboreInfo.longitude.value) }}</span>
+            </div>
+          </div>
+ 
+          <div class="total-surveys">
+            <span class="value">{{ well.totalSurveys }}</span>
+            <span class="label">Total Surveys</span>
+          </div>
+        </div>
+ 
+        <div class="footer-wrapper">
+          <div class="card-footer" *ngFor="let survey of well.processSummary">
+            <div class="survey-heading">
+              <h4 class="survey-name">{{ commonService.formatName(survey?.name) }}</h4>
+              <h4 class="survey-label">
+                <span class="label">Total Surveys </span>
+                <span class="survey-count-val">{{survey.totalSurveys}}</span>
+              </h4>
+            </div>
+           
+            <div class="chart-labels">
+              <div class="label-column auto-approved-bar" [pTooltip]="'Auto Approved: ' + survey.totalAutoApprovedSurveys">
+                <span class="status-icon"><img src="outline/check.png" alt=""></span>
+                <span class="status-value">{{ survey.totalAutoApprovedSurveys }}</span>
+              </div>
+             
+              <div class="label-column user-approved-bar" [pTooltip]="'User Approved: ' + survey.totalUserApprovedSurveys">
+                <span class="status-icon"><img src="outline/user.png" alt=""></span>
+                <span class="status-value">{{ survey.totalUserApprovedSurveys }}</span>
+              </div>
+ 
+              <div class="label-column auto-reject-bar" [pTooltip]="'Auto Rejected: ' + survey.totalAutoRejectedSurveys">
+                <span class="status-icon"><img src="outline/close.png" alt=""></span>
+                <span class="status-value">{{ survey.totalAutoRejectedSurveys }}</span>
+              </div>
+ 
+              <div class="label-column total-user-rejected-surveys-bar" [pTooltip]="'User Rejected: ' + survey.totalUserRejectedSurveys">
+                <span class="status-icon"><img src="outline/stop.png" alt=""></span>
+                <span class="status-value">{{ survey.totalUserRejectedSurveys }}</span>
+              </div>
+ 
+              <div class="label-column unknown-surveys-bar" [pTooltip]="'Unknown: ' + survey.totalUnknownSurveys">
+                <span class="status-icon"><img src="outline/question-circle.png" alt=""></span>
+                <span class="status-value">{{ survey.totalUnknownSurveys }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+       
+      </div>
+    </div>
+  </div>
+</div>

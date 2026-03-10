@@ -1,0 +1,326 @@
+* {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+}
+:host {
+	display: block;
+}
+
+.survey {
+	background: #061827;
+	border: 1px solid #11344a;
+	border-radius: 8px;
+	overflow: hidden;
+	height: 100vh;
+	display: flex;
+	flex-direction: column;
+}
+
+.well-title {
+	margin: 0;
+	color: #e8f0f8;
+	font-size: 1.3rem;
+	font-weight: 600;
+}
+
+.toolbar-start {
+	display: flex;
+	align-items: center;
+	gap: 0.35rem;
+}
+
+:host ::ng-deep .survey-toolbar.p-toolbar {
+	background: #082335;
+	border: 0;
+	border-bottom: 1px solid #174058;
+	border-radius: 0;
+	padding: 0.5rem 0.75rem;
+}
+
+:host ::ng-deep .survey-toolbar .p-toolbar-group-end {
+	display: flex;
+	align-items: center;
+	gap: 0.5rem;
+	flex-wrap: nowrap;
+	min-width: 0;
+}
+
+:host ::ng-deep .survey-toolbar .back-arrow-btn,
+:host ::ng-deep .survey-toolbar .back-arrow-btn.p-button {
+	color: #d9e8f5;
+	width: 1.9rem;
+	height: 1.9rem;
+	border: 0;
+	background: transparent;
+	box-shadow: none;
+}
+
+:host ::ng-deep .survey-toolbar .back-arrow-btn:hover,
+:host ::ng-deep .survey-toolbar .back-arrow-btn.p-button:hover,
+:host ::ng-deep .survey-toolbar .back-arrow-btn:focus,
+:host ::ng-deep .survey-toolbar .back-arrow-btn.p-button:focus {
+	background: #0e2f45 !important;
+	color: #ffffff;
+	box-shadow: none !important;
+}
+
+.survey-type-radio-group {
+	display: flex;
+	align-items: center;
+	gap: 0.8rem;
+	flex-wrap: nowrap;
+	white-space: nowrap;
+	overflow-x: auto;
+	scrollbar-width: none;
+}
+
+.survey-type-radio-group::-webkit-scrollbar {
+	display: none;
+}
+
+.field-radiobutton {
+	display: inline-flex;
+	align-items: center;
+	gap: 0.3rem;
+	margin: 0;
+	min-width: max-content;
+}
+
+.field-radiobutton label {
+	color: #d7e7f5;
+	font-size: 0.82rem;
+	line-height: 1;
+	cursor: pointer;
+	margin: 0;
+}
+
+:host ::ng-deep .survey-type-radio-group .p-radiobutton {
+	width: 14px;
+	height: 14px;
+}
+
+:host ::ng-deep .survey-type-radio-group .p-radiobutton .p-radiobutton-box {
+	background: transparent;
+	border: 1px solid #7ea2ba;
+	width: 14px;
+	height: 14px;
+}
+
+:host ::ng-deep .survey-type-radio-group .p-radiobutton .p-radiobutton-box.p-highlight {
+	border-color: #21a3ff;
+}
+
+:host ::ng-deep .survey-type-radio-group .p-radiobutton .p-radiobutton-box .p-radiobutton-icon {
+	background: #21a3ff;
+	width: 7px;
+	height: 7px;
+}
+
+:host ::ng-deep .survey-type-radio-group .p-radiobutton:not(.p-disabled):hover .p-radiobutton-box {
+	border-color: #9bc0d8;
+}
+
+:host ::ng-deep .survey-toolbar .p-selectbutton .p-button {
+	background: transparent;
+	border: 1px solid #1f445d;
+	color: #a9bfd2;
+	font-size: 0.85rem;
+	padding: 0.35rem 0.7rem;
+}
+
+:host ::ng-deep .survey-toolbar .p-selectbutton .p-button:not(.p-highlight):hover {
+	background: #0e2e45;
+	color: #d7e7f5;
+}
+
+:host ::ng-deep .survey-toolbar .p-selectbutton .p-button.p-highlight {
+	background: #123a56;
+	border-color: #2c6284;
+	color: #f1f7fd;
+}
+
+:host ::ng-deep .survey-toolbar .msa-btn,
+:host ::ng-deep .survey-toolbar .p-button.p-button-primary {
+	border: 1px solid #2f5368;
+	font-size: 0.85rem;
+	padding: 0.35rem 0.7rem;
+}
+
+:host ::ng-deep .survey-toolbar .msa-btn {
+	background: #0f2f45;
+	color: #d7e8f7;
+}
+
+:host ::ng-deep .survey-toolbar .p-button.p-button-primary {
+	background: #0d8e4f;
+	border-color: #0d8e4f;
+	color: #ffffff;
+}
+
+:host ::ng-deep .survey-table .p-datatable-wrapper {
+	background: #071b2b;
+	height: 100%;
+}
+
+:host ::ng-deep .survey-table.p-datatable {
+	flex: 1;
+	min-height: 0;
+}
+
+:host ::ng-deep .survey-table .p-datatable-table-container {
+	height: 100%;
+}
+
+:host ::ng-deep .survey-table .p-datatable-table {
+	font-size: 0.82rem;
+}
+
+:host ::ng-deep .survey-table .p-datatable-thead > tr > th {
+	position: sticky;
+	top: 0;
+	z-index: 2;
+	background: #082335;
+	color: #d7e7f5;
+	border: 1px solid #153b52;
+	padding: 0.2rem 0.5rem 0.35rem;
+	min-width: 7.5rem;
+	font-weight: 600;
+	line-height: 1.1;
+	white-space: nowrap;
+}
+
+:host ::ng-deep .survey-table .p-datatable-tbody > tr > td {
+	background: #071b2b;
+	color: #c8d7e5;
+	border: 1px solid #123247;
+	padding: 0.16rem 0.5rem 0.08rem;
+	min-width: 7.5rem;
+	line-height: 1.1;
+	white-space: nowrap;
+}
+
+:host ::ng-deep .survey-table .p-datatable-tbody > tr:hover > td {
+	background: #0a2538;
+}
+
+:host ::ng-deep .survey-table .selected-row > td {
+	background: #0d2f46 !important;
+}
+
+:host ::ng-deep .survey-table .p-select {
+	width: 100%;
+	min-height: 1.3rem;
+	background: #071b2b !important;
+	border: none;
+	border-radius: 3px;
+}
+
+:host ::ng-deep .survey-table .p-select .p-select-label,
+:host ::ng-deep .survey-table .p-select .p-select-trigger {
+	background: #071b2b;
+	/* border-color: #29506a; */
+	color: #e4eef8;
+}
+
+:host ::ng-deep .survey-table .p-select .p-select-label {
+	padding: 0.1rem 0.3rem;
+	font-size: 0.78rem;
+	line-height: 1.05;
+}
+
+:host ::ng-deep .survey-table .p-select .p-select-trigger {
+	width: 1.35rem;
+	color: #9fc2d8;
+}
+
+:host ::ng-deep .survey-table .p-select .p-select-trigger {
+	border-left: 0;
+}
+
+.status-error-icon {
+	margin-left: 0.3rem;
+	margin-right: 0;
+	width: 0.62rem;
+	height: 0.62rem;
+	min-width: 0.62rem;
+	border: 1px solid #ff4d4f;
+	border-radius: 50%;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	position: relative;
+}
+
+.status-error-icon::before {
+	content: '';
+	position: absolute;
+	width: 0.44rem;
+	height: 1px;
+	background: #ff4d4f;
+	transform: rotate(45deg);
+}
+
+.status-cell-wrap {
+	display: flex;
+	align-items: center;
+	width: 100%;
+	min-width: 0;
+}
+
+.status-cell-wrap .survey-cell-select {
+	flex: 1;
+	min-width: 0;
+	width: auto !important;
+}
+
+:host ::ng-deep .survey-cell-select {
+	min-width: 6.25rem;
+}
+
+:host ::ng-deep .survey-dropdown-panel,
+:host ::ng-deep .survey-dropdown-panel.p-select-overlay {
+	background: #071b2b !important;
+	border: 1px solid #2d5168 !important;
+	color: #d7e7f5;
+}
+
+:host ::ng-deep .survey-dropdown-panel .p-select-list {
+	padding: 0.15rem 0;
+	background: #071b2b !important;
+}
+
+:host ::ng-deep .survey-dropdown-panel .p-select-option {
+	color: #d7e7f5 !important;
+	padding: 0.28rem 0.45rem;
+	font-size: 0.78rem;
+	line-height: 1.05;
+}
+
+:host ::ng-deep .survey-dropdown-panel .p-select-option.p-select-option-selected,
+:host ::ng-deep .survey-dropdown-panel .p-select-option:hover,
+:host ::ng-deep .survey-dropdown-panel .p-select-option.p-focus {
+	background: #123a56 !important;
+	color: #ffffff !important;
+}
+
+:host ::ng-deep .survey-error-tooltip .p-tooltip-text {
+	background: rgba(0, 0, 0, 0.92) !important;
+	color: #ffffff !important;
+	border: 1px solid rgba(255, 255, 255, 0.16);
+	border-radius: 2px;
+	padding: 0.35rem 0.5rem;
+	font-size: 0.78rem;
+	line-height: 1.35;
+	white-space: pre-line;
+	max-width: 44rem;
+}
+
+:host ::ng-deep .survey-error-tooltip.p-tooltip-right .p-tooltip-arrow {
+	border-right-color: rgba(0, 0, 0, 0.92) !important;
+}
+
+:host ::ng-deep .survey-table .p-datatable-scrollable-body,
+:host ::ng-deep .survey-table .p-datatable-scrollable-header,
+:host ::ng-deep .survey-table .p-datatable-scrollable-footer {
+	scrollbar-color: #33556b #081a2a;
+	scrollbar-width: thin;
+}

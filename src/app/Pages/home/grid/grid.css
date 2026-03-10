@@ -1,0 +1,204 @@
+.dashboard-table {
+  background-color: #0b141d;
+  height: 100%;
+  overflow-y: auto;
+  max-height: calc(100vh - 90px);
+}
+ 
+/* ===============================
+   GRID STRUCTURE
+================================= */
+ 
+.grid-container {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  min-width: 1200px;
+}
+ 
+/* HEADER + ROW GRID */
+ 
+.grid-header,
+.grid-row {
+  display: grid;
+  grid-template-columns:
+    100px
+    140px
+    170px
+    100px
+    100px
+    90px
+    380px
+    120px;
+}
+ 
+/* ===============================
+   HEADER
+================================= */
+ 
+.grid-header {
+  background: #1a2332;
+  border-bottom: 1px solid #2d3e52;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+ 
+.grid-header .grid-cell {
+  color: #94a3b8;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+}
+ 
+/* ===============================
+   ROW
+================================= */
+ 
+.grid-row {
+  border-bottom: 1px solid #1f2e3c;
+  min-height: 32px;
+  align-items: center;
+}
+ 
+.grid-row:hover {
+  background: rgba(255,255,255,0.05);
+}
+ 
+/* ===============================
+   CELLS
+================================= */
+ 
+.grid-cell {
+  padding: 4px 6px;
+  display: flex;
+  align-items: center;
+  font-size: 12px;
+  color: #d1d5db;
+  border-right: 1px solid #1f2e3c;
+}
+ 
+.grid-cell:last-child {
+  border-right: none;
+}
+ 
+/* ===============================
+   SERVICE COMPANY
+================================= */
+ 
+.service-container {
+  display: flex;
+  align-items: center;
+  width: 100%;
+}
+ 
+.service-container span {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+ 
+/* ===============================
+   SURVEY SUMMARY COLUMN
+================================= */
+ 
+.col-summary {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 3px;
+  white-space: normal;
+}
+ 
+/* EACH VENDOR ROW */
+ 
+.survey-summary-item {
+  display: grid;
+  grid-template-columns: 120px auto;
+  align-items: center;
+  gap: 10px;
+}
+ 
+/* VENDOR NAME */
+ 
+.survey-vendor-name {
+  font-size: 12px;
+  color: #cbd5e1;
+  font-weight: 500;
+  white-space: nowrap;
+}
+ 
+/* STATUS CONTAINER */
+ 
+.survey-status-badges {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+ 
+/* STATUS ITEM */
+ 
+.status-item {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  font-size: 11px;
+  color: #cbd5e1;
+}
+ 
+/* ICON SIZE */
+ 
+.badge-icon {
+  width: 10px;
+  height: 10px;
+}
+ 
+/* ===============================
+   ACTIONS
+================================= */
+ 
+.table-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+ 
+.action-icon {
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+}
+ 
+.action-icon img {
+  width: 14px;
+  height: 14px;
+}
+ 
+/* ===============================
+   MSA BUTTON
+================================= */
+ 
+.msa-btn .p-button {
+  background-color: #10b981 !important;
+  border: none !important;
+  color: #000 !important;
+  font-weight: 600 !important;
+  padding: 2px 8px !important;
+  height: 22px !important;
+  font-size: 10px !important;
+  border-radius: 3px !important;
+}
+ 
+.msa-btn .p-button:hover {
+  background-color: #059669 !important;
+}
+ 
+::ng-deep .p-tooltip {
+  font-size: 11px !important;
+}
+ 
+::ng-deep .p-tooltip .p-tooltip-text {
+  background: #0f172a !important;
+  color: #e2e8f0 !important;
+}

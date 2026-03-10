@@ -1,0 +1,129 @@
+@if (commonService.selectedDashboardLayout === 'Grid') {
+  <div class="dashboard-table">
+    <div class="grid-container">
+      <!-- Header Row -->
+      <div class="grid-header">
+        <div class="grid-cell col-well-id">Well ID</div>
+        <div class="grid-cell col-service">Service Company</div>
+        <div class="grid-cell col-date">Last Survey Received</div>
+        <div class="grid-cell col-coord">Latitude</div>
+        <div class="grid-cell col-coord">Longitude</div>
+        <div class="grid-cell col-total">Total Surveys</div>
+        <div class="grid-cell col-summary">Survey Summary</div>
+        <div class="grid-cell col-actions">Actions</div>
+      </div>
+ 
+      <!-- Data Rows -->
+      @for (well of commonService.filteredWellBoreArr; track well.wellboreInfo?.wellboreId?.value) {
+        <div class="grid-row">
+          <!-- Well ID -->
+          <div class="grid-cell col-well-id">
+            {{ well.wellboreInfo?.wellboreId?.value }}
+          </div>
+ 
+          <!-- Service Company -->
+          <div class="grid-cell col-service">
+            <div class="service-container"
+                 [pTooltip]="getAllServiceCompanyNames(well.wellboreInfo?.serviceCompanyInfos || [])"
+                 tooltipPosition="top">
+              @if (well.wellboreInfo?.serviceCompanyInfos?.length === 1) {
+                <span>
+                  {{ commonService.formatName(well.wellboreInfo.serviceCompanyInfos[0]?.name) }}
+                </span>
+              } @else if (well.wellboreInfo?.serviceCompanyInfos?.length > 1) {
+                <span class="truncate-text">
+                  {{ commonService.formatName(well.wellboreInfo.serviceCompanyInfos[0]?.name) }} +
+                  {{ well.wellboreInfo.serviceCompanyInfos.length - 1 }}
+                </span>
+              }
+            </div>
+          </div>
+ 
+          <!-- Last Survey Received -->
+          <div class="grid-cell col-date">
+            {{ commonService.getFormattedDate(well.lastSurveyReceivedTime) | date: 'dd/MM/yy HH:mm:ss' }}
+          </div>
+ 
+          <!-- Latitude -->
+          <div class="grid-cell col-coord">
+            {{ commonService.formatLatitude(well.wellboreInfo?.latitude?.value) }}
+          </div>
+ 
+          <!-- Longitude -->
+          <div class="grid-cell col-coord">
+            {{ commonService.formatLongitude(well.wellboreInfo?.longitude?.value) }}
+          </div>
+ 
+          <!-- Total Surveys -->
+          <div class="grid-cell col-total">
+            {{ well.totalSurveys }}
+          </div>
+ 
+          <!-- Survey Summary -->
+          <div class="grid-cell col-summary">
+            @for (survey of well.processSummary; track survey.name) {
+              <div class="survey-summary-item">
+                <div class="survey-vendor-name">{{ survey.name }}</div>
+                <div class="survey-status-badges">
+                  <span class="status-badge status-check" [pTooltip]="'Total: ' + survey.totalSurveys">
+                    <img src="outline/check.png" alt="check" class="badge-icon">
+                    {{ survey.totalSurveys }}
+                  </span>
+                 
+                  <span class="status-badge status-approved" [pTooltip]="'Auto Approved: ' + survey.totalAutoApprovedSurveys">
+                    <img src="outline/check.png" alt="approved" class="badge-icon">
+                    {{ survey.totalAutoApprovedSurveys }}
+                  </span>
+                 
+                  <span class="status-badge status-user-approved" [pTooltip]="'User Approved: ' + survey.totalUserApprovedSurveys">
+                    <img src="outline/user.png" alt="user" class="badge-icon">
+                    {{ survey.totalUserApprovedSurveys }}
+                  </span>
+                 
+                  <span class="status-badge status-rejected" [pTooltip]="'Auto Rejected: ' + survey.totalAutoRejectedSurveys">
+                    <img src="outline/close.png" alt="close" class="badge-icon">
+                    {{ survey.totalAutoRejectedSurveys }}
+                  </span>
+                 
+                  <span class="status-badge status-user-rejected" [pTooltip]="'User Rejected: ' + survey.totalUserRejectedSurveys">
+                    <img src="outline/stop.png" alt="stop" class="badge-icon">
+                    {{ survey.totalUserRejectedSurveys }}
+                  </span>
+                 
+                  <span class="status-badge status-unknown" [pTooltip]="'Unknown: ' + survey.totalUnknownSurveys">
+                    <img src="outline/question-circle.png" alt="unknown" class="badge-icon">
+                    {{ survey.totalUnknownSurveys }}
+                  </span>
+                </div>
+              </div>
+            }
+          </div>
+ 
+          <!-- Actions -->
+          <div class="grid-cell col-actions">
+            <div class="table-actions">
+              <p-button
+                label="MSA"
+                size="small"
+                [pTooltip]="'Run MSA'"
+                (onClick)="InitiateRunMSA(well)"
+                styleClass="msa-btn" />
+ 
+              <span class="action-icon" (click)="commonService.viewWellboreReport(well)" pTooltip="View Report">
+                <img src="outline/file-pdf.png" alt="PDF">
+              </span>
+             
+              <span class="action-icon" (click)="commonService.viewWellboreCharts(well.wellboreInfo.wellboreId.value)" pTooltip="View Chart">
+                <img src="outline/area-chart.png" alt="Chart">
+              </span>
+ 
+              <span class="action-icon" (click)="commonService.viewWellboreSurveys(well.wellboreInfo.wellboreId.value)" pTooltip="View Surveys">
+                <img src="outline/eye.png" alt="View">
+              </span>
+            </div>
+          </div>
+        </div>
+      }
+    </div>
+  </div>
+}

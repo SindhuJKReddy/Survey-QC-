@@ -1,0 +1,320 @@
+<div class="report-container">
+  <!-- PrimeNG Page Header -->
+  <p-toolbar class="report-toolbar">
+    <div class="p-toolbar-group-left">
+      <button 
+         pButton 
+         type="button" 
+         icon="pi pi-arrow-left" 
+         class="back-arrow-btn" 
+         [text]="true" 
+         (click)="goBackToHome()">
+        </button>
+      <h2>{{ reportWellLabel }}</h2>
+      <small>{{wellDataForPdf?.wellboreInfo?.wellId?.value}} - Report</small>
+    </div>
+    <div class="p-toolbar-group-right report-tool">
+      <button pButton type="button" class="report-btn" label="Report Settings" icon="pi pi-cog" (click)="toggleReportSettings($event)"></button>
+
+      <div class="report-settings-dropdown" *ngIf="isReportSettingsOpen" (click)="$event.stopPropagation()">
+        <button
+          type="button"
+          class="report-settings-item"
+          *ngFor="let setting of wellBoreDataForPdfData"
+          (click)="onReportSettingToggle(setting, $event)">
+          <i class="pi pi-check" *ngIf="setting.isVisible"></i>
+          <span class="check-placeholder" *ngIf="!setting.isVisible"></span>
+          <span>{{ setting.name }}</span>
+        </button>
+      </div>
+
+      <button pButton type="button" class="flat-btn" label="Download Report" icon="pi pi-download" (click)="downloadReport()"></button>
+    </div>
+  </p-toolbar>
+
+  <div class="report">
+    <div id="into-data">
+      <div class="a4">
+        <div class="intro">
+          <div class="into-content">
+            <div class="bg">
+              <img src="bg.png">
+              <h2>
+                {{ wellDataForPdf?.wellboreInfo?.wellboreId?.value }} Report<br />
+                for<br />
+                {{ wellDataForPdf?.wellboreInfo?.customerName?.value ? wellDataForPdf?.wellboreInfo?.customerName?.value
+                : 'N/A' }}<br />
+              </h2>
+            </div>
+          </div>
+
+          <div class="intro-table-content">
+            <table>
+              <tr>
+                <td>Customer :</td>
+                <td class="text-left">{{ wellDataForPdf?.wellboreInfo?.customerName?.value || 'N/A' }}</td>
+              </tr>
+              <tr>
+                <td>Well Id :</td>
+                <td class="text-left">{{ wellDataForPdf?.wellboreInfo?.wellId?.value ?? 'N/A' }}</td>
+              </tr>
+              <tr>
+                <td>Wellbore Id :</td>
+                <td class="text-left">{{ wellDataForPdf?.wellboreInfo?.wellboreId?.value ?? 'N/A' }}</td>
+              </tr>
+              <tr>
+                <td>Service Company :</td>
+                <td>
+                  <div *ngFor="let company of wellDataForPdf?.wellboreInfo?.serviceCompanyInfos">
+                    {{ company?.serviceCompany?.value ?? commonService.formatName(company?.name) ?? 'N/A' }}
+                  </div>
+                </td>
+              </tr>
+              <tr>
+                <td>Latitude :</td>
+                <td>{{ commonService.formatLatitude(wellDataForPdf?.wellboreInfo?.latitude?.value) }}</td>
+              </tr>
+              <tr>
+                <td>Longitude :</td>
+                <td>{{ commonService.formatLongitude(wellDataForPdf?.wellboreInfo?.longitude?.value) }}</td>
+              </tr>
+              <tr>
+                <td>Report Date :</td>
+                <td class="text-left">{{ dateForPrintView | date: 'MM/dd/yyyy HH:mm:ss aa' }}</td>
+              </tr>
+            </table>
+
+            <div class="footer-logo">
+              <img src="logo.png">
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="a4 disclaimer">
+        <div class="disclaimer-text-top" style="flex-direction: column;">
+          <h2>Disclaimer</h2>
+          <p>Because of the uncertainty of variable well conditions the necessity of relying on facts and
+            supporting services furnished by others, Halliburton IS UNABLE TO GUARANTEE THE EFFECTIVENESS OF
+            THE
+            PRODUCTS, SUPPLIES OR MATERIALS, NOR THE RESULTS OF ANY TREATMENT OR SERVICE, NOR THE ACCURACY
+            OF
+            ANY CHART INTERPRETATION, RESEARCH ANALYSIS, JOB RECOMMENDATION OR OTHER DATA FURNISHED BY
+            Halliburton. Halliburton personnel will use their best efforts in gathering such information and
+            their best judgment in interpreting it, but Customer agrees that Halliburton shall not be liable
+            for
+            and Customer SHALL RELEASE, DEFEND AND INDEMNIFY Halliburton against any damages or liability
+            arising from the use of such information even if such damages are contributed to or caused by
+            the
+            negligence, fault or strict liability of Halliburton.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="a4-auto">
+      <div id="contentStartHeder">
+        <div class="well-information">
+          <div class="common-header">
+            <img src="header.png">
+          </div>
+          <div class="common-content">
+
+            <div class="well-info-table">
+              <div class="heading">
+                <h2>Configuration Information</h2>
+              </div>
+              <div class="content survey-table">
+                <ng-container *ngIf="wellDataForPdf?.wellboreInfo?.serviceCompanyInfos?.length">
+                  <ng-container *ngFor="let company of wellDataForPdf?.wellboreInfo?.serviceCompanyInfos">
+                    <table *ngIf="company?.serviceCompany" style="min-width: 50%; font-size: 14px;">
+                      <tr>
+                        <td>Service Company :</td>
+                        <td class="text-left">
+                          <span class="capitalize">{{ company?.serviceCompany?.value ?? commonService.formatName(company?.name) ?? 'N/A' }}</span> {{
+                          company?.serviceCompany.valueUnit ?? 'N/A' }}
+                        </td>
+                      </tr>
+                      <tr>
+                        <td>Azimuth Reference :</td>
+                        <td class="text-left">{{ company?.azimuthReference.value ?? 'N/A' }} {{
+                          company?.azimuthReference.valueUnit ?? 'N/A' }}</td>
+                      </tr>
+                      <tr>
+                        <td>Azimuth Vertical Section :</td>
+                        <td class="text-left">{{ company?.azimuthVerticalSection.value ?? 'N/A' }} {{
+                          company?.azimuthVerticalSection.valueUnit ?? 'N/A' }}</td>
+                      </tr>
+                      <tr>
+                        <td>Grid Convergence Used :</td>
+                        <td class="text-left">{{ company?.gridConvergenceUsed.value ?? 'N/A' }} {{
+                          company?.gridConvergenceUsed.valueUnit ?? 'N/A' }}</td>
+                      </tr>
+                      <tr>
+                        <td>Magnetic Declination Used :</td>
+                        <td class="text-left">{{ company?.magneticDeclinationUsed.value ?? 'N/A' }} {{
+                          company?.magneticDeclinationUsed.valueUnit ?? 'N/A' }}</td>
+                      </tr>
+                    </table>
+                  </ng-container>
+                </ng-container>
+              </div>
+            </div>
+
+            <div class="well-info-table">
+              <div class="heading">
+                <h2>FAC Limits</h2>
+              </div>
+              <div class="content survey-table">
+                <table style="min-width: 50%; font-size: 14px;">
+                  <thead>
+                    <th>Name</th>
+                    <th>Threshold</th>
+                    <th>Units</th>
+                  </thead>
+                  <tr>
+                    <td>Azimuth Delta Threshold :</td>
+                    <td>{{ commonService.facConfiguration?.azimuthQCLimits?.threshold }}</td>
+                    <td>{{ commonService.facConfiguration?.azimuthQCLimits?.unit}}</td>
+                  </tr>
+                  <tr>
+                    <td>GTotal QC Limits :</td>
+                    <td>{{ commonService.facConfiguration?.gTotalQCLimits?.threshold }}</td>
+                    <td>{{ commonService.facConfiguration?.gTotalQCLimits?.unit}}</td>
+                  </tr>
+                  <tr>
+                    <td>Inclination Delta Threshold :</td>
+                    <td>{{ commonService.facConfiguration?.inclinationQCLimits?.threshold }}</td>
+                    <td>{{ commonService.facConfiguration?.inclinationQCLimits?.unit}}</td>
+                  </tr>
+                  <tr>
+                    <td>Dip QC Limits :</td>
+                    <td>{{ commonService.facConfiguration?.dipQCLimits?.threshold }}</td>
+                    <td>{{ commonService.facConfiguration?.dipQCLimits?.unit}}</td>
+                  </tr>
+                  <tr>
+                    <td>BTotal QC Limits :</td>
+                    <td>{{ commonService.facConfiguration?.bTotalQCLimits?.threshold }}</td>
+                    <td>{{ commonService.facConfiguration?.bTotalQCLimits?.unit}}</td>
+                  </tr>
+                </table>
+              </div>
+            </div>
+
+            <div class="well-info-table">
+              <div class="heading">
+                <h2>Survey Information</h2>
+              </div>
+              <div class="content survey-table">
+                <div *ngFor="let surveyInfo of wellDataForPdf?.processSummary">
+                  <table style="min-width: 50%; font-size: 14px;">
+                    <tr>
+                      <td>Name</td>
+                      <td>{{ getAllServiceCompanyNames(surveyInfo?.name) }}</td>
+                    </tr>
+                    <tr>
+                      <td>Total Surveys :</td>
+                      <td>{{ surveyInfo?.totalSurveys }}</td>
+                    </tr>
+                    <tr>
+                      <td>Auto Approved :</td>
+                      <td>{{ surveyInfo?.totalAutoApprovedSurveys }}</td>
+                    </tr>
+                    <tr>
+                      <td>User Approved :</td>
+                      <td>{{ surveyInfo?.totalUserApprovedSurveys }}</td>
+                    </tr>
+                    <tr>
+                      <td>Auto Rejected :</td>
+                      <td>{{ surveyInfo?.totalAutoRejectedSurveys }}</td>
+                    </tr>
+                    <tr>
+                      <td>Total User Rejected :</td>
+                      <td>{{ surveyInfo?.totalUserRejectedSurveys }}</td>
+                    </tr>
+                    <tr>
+                      <td>Unknown Surveys :</td>
+                      <td>{{ surveyInfo?.totalUnknownSurveys }}</td>
+                    </tr>
+                  </table>
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+
+      <div class="main-container">
+        <div class="common-content" *ngFor="let chart of chartOptionsForPdf; let i = index">
+          <div class="well-info-table" *ngIf="wellBoreDataForPdfData[i]?.isVisible">
+            <div class="heading">
+              <h2>{{ wellBoreDataForPdfData[i]?.name }}</h2>
+            </div>
+            <div class="charts-container">
+              <div echarts [options]="chart" class="chart-container"
+                (chartInit)="allSurveyChartChartForReportInit($event, i)"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="main-container" id="surveys" class="survey-data">
+        <div class="common-content">
+          <div class="well-info-table">
+            <div class="heading">
+              <h2>Surveys</h2>
+            </div>
+            <div *ngIf="filteredWellBoreDataForPdf">
+              <table class="report">
+                <thead>
+                  <tr>
+                    <th *ngFor="let header of wellboreSurveyHeadersForPdf" [style.width]="header.width">
+                      {{ header.label }}{{ header.unit ? ' (' + header.unit + ')' : '' }}
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr *ngFor="let row of filteredWellBoreDataForPdf">
+                    <td *ngFor="let header of wellboreSurveyHeadersForPdf" [style.width]="header.width">
+                      {{ isValidValue(row[header.key]) ? row[header.key] : '' }}
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="comments" id="disclaimer" style="margin: 10px 0px;">
+        <div class="heading">
+          <h2>Disclaimer</h2>
+        </div>
+        <div class="disclaimer-text">
+          Because of the uncertainty of variable well conditions the necessity of relying on facts and
+            supporting services furnished by others, Halliburton IS UNABLE TO GUARANTEE THE EFFECTIVENESS OF
+            THE
+            PRODUCTS, SUPPLIES OR MATERIALS, NOR THE RESULTS OF ANY TREATMENT OR SERVICE, NOR THE ACCURACY
+            OF
+            ANY CHART INTERPRETATION, RESEARCH ANALYSIS, JOB RECOMMENDATION OR OTHER DATA FURNISHED BY
+            Halliburton. Halliburton personnel will use their best efforts in gathering such information and
+            their best judgment in interpreting it, but Customer agrees that Halliburton shall not be liable
+            for
+            and Customer SHALL RELEASE, DEFEND AND INDEMNIFY Halliburton against any damages or liability
+            arising from the use of such information even if such damages are contributed to or caused by
+            the
+            negligence, fault or strict liability of Halliburton.
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- PrimeNG SplitButton Model -->
+<!-- In your TS component -->
+<!-- 
+reportSettingItems = wellBoreDataForPdfData.map(setting => ({
+  label: setting.name,
+  icon: setting.isVisible ? 'pi pi-check' : '',
+  command: () => setting.isVisible = !setting.isVisible
+}));
+-->

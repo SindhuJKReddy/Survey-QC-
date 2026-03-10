@@ -1,0 +1,81 @@
+@import "primeicons/primeicons.css";
+
+ 
+* {
+  padding: 0;
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+}
+
+.auto-approved-tooltip {
+  background: black !important;
+  color: #fff !important;
+  font-size: 12px;
+  padding: 6px 10px;
+  border-radius: 6px;
+}
+
+.chart-autocomplete-panel,
+.chart-autocomplete-panel.p-autocomplete-overlay {
+  background: #16191f !important;
+  border: 1px solid #1f3a4d !important;
+  color: #dbe6f1 !important;
+}
+
+.chart-autocomplete-panel .p-autocomplete-list {
+  background: #16191f !important;
+}
+
+.chart-autocomplete-panel .p-autocomplete-option {
+  background: transparent !important;
+  color: #dbe6f1 !important;
+}
+
+.chart-autocomplete-panel .p-autocomplete-option:hover,
+.chart-autocomplete-panel .p-autocomplete-option.p-focus,
+.chart-autocomplete-panel .p-autocomplete-option.p-highlight {
+  background: #0f273b !important;
+  color: #ffffff !important;
+}
+
+.chart-autocomplete .p-autocomplete-dropdown,
+.chart-autocomplete .p-button {
+  background: #061827 !important;
+  border: 1px solid #1f3a4d !important;
+  color: #dbe6f1 !important;
+}
+
+.chart-autocomplete .p-autocomplete-dropdown:hover,
+.chart-autocomplete .p-button:hover {
+  background: #0a2235 !important;
+  border-color: #2b4a63 !important;
+}
+
+.chart-autocomplete .p-autocomplete-dropdown .p-button-icon,
+.chart-autocomplete .p-button .p-button-icon,
+.chart-autocomplete .pi.pi-chevron-down {
+  color: #a9c1d6 !important;
+}
+
+.chart-autocomplete-panel .p-autocomplete-list {
+  scrollbar-color: #2a4256 #111921;
+  scrollbar-width: thin;
+}
+
+.chart-autocomplete-panel .p-autocomplete-list::-webkit-scrollbar {
+  width: 10px;
+}
+
+.chart-autocomplete-panel .p-autocomplete-list::-webkit-scrollbar-track {
+  background: #111921;
+}
+
+.chart-autocomplete-panel .p-autocomplete-list::-webkit-scrollbar-thumb {
+  background: #2a4256;
+  border-radius: 8px;
+  border: 2px solid #111921;
+}
+
+.chart-autocomplete-panel .p-autocomplete-list::-webkit-scrollbar-thumb:hover {
+  background: #3a5a74;
+}

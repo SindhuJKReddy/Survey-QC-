@@ -1,0 +1,138 @@
+.wellbore-charts-container {
+  min-height: calc(100vh - 40px);
+  background: #142231;
+  border: 1px solid #223140;
+  border-radius: 8px;
+}
+
+.charts-topbar {
+  height: 34px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 8px;
+  background: #082338;
+  border-bottom: 1px solid #173448;
+  color: #dbe6f1;
+  margin-bottom: 7px;
+}
+
+
+.back-btn {
+  color: #d9e8f5;
+  width: 1.6rem;
+  height: 1.6rem;
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+  padding: 0;
+}
+
+.back-btn:hover,
+.back-btn:focus {
+  background: #0e2f45 !important;
+  color: #ffffff !important;
+  box-shadow: none !important;
+}
+
+:host ::ng-deep .charts-topbar .back-btn.p-button {
+  color: #d9e8f5;
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+:host ::ng-deep .charts-topbar .back-btn.p-button:hover,
+:host ::ng-deep .charts-topbar .back-btn.p-button:focus {
+  background: #0e2f45 !important;
+  color: #ffffff !important;
+  box-shadow: none !important;
+}
+
+.well-title {
+  font-size: 28px;
+  font-weight: 700;
+  line-height: 1;
+  margin-right: auto;
+}
+
+.chart-picker {
+  min-width: 220px;
+  height: 24px;
+}
+
+.charts-canvas {
+  position: relative;
+  height: calc(100vh - 76px);
+  min-height: 620px;
+  background: radial-gradient(circle at top, #1b2a3a 0%, #16191f 60%);
+}
+
+.loading-overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.35);
+  z-index: 5;
+}
+
+div[echarts] {
+  height: 100% !important;
+  width: 100% !important;
+  display: block;
+}
+
+:host ::ng-deep .chart-picker .p-autocomplete,
+:host ::ng-deep .chart-picker .p-autocomplete-input,
+:host ::ng-deep .chart-picker .p-inputtext {
+  width: 100%;
+  background: #061827 !important;
+  border-color: #1f3a4d !important;
+  color: #e5eef8 !important;
+}
+
+:host ::ng-deep .chart-picker .p-button {
+  background: #061827 !important;
+  border-color: #1f3a4d !important;
+  color: #dbe6f1 !important;
+}
+
+:host ::ng-deep .chart-picker .p-autocomplete .p-inputtext {
+  height: 24px;
+  font-size: 12px;
+  padding: 0 0.55rem;
+}
+
+:host ::ng-deep .chart-picker .p-autocomplete .p-button {
+  width: 24px;
+}
+
+:host ::ng-deep .chart-autocomplete-panel {
+  width: 220px !important;
+  border: 1px solid #1f3a4d;
+  background: #112737;
+}
+
+:host ::ng-deep .chart-autocomplete-panel .p-autocomplete-list-container {
+  max-height: 230px;
+  overflow-y: auto;
+}
+
+:host ::ng-deep .chart-autocomplete-panel .p-autocomplete-list {
+  padding: 0;
+}
+
+:host ::ng-deep .chart-autocomplete-panel .p-autocomplete-option {
+  font-size: 12px;
+  color: #dbe6f1;
+  padding: 0.55rem 0.7rem;
+  background: #112737;
+}
+
+:host ::ng-deep .chart-autocomplete-panel .p-autocomplete-option.p-focus,
+:host ::ng-deep .chart-autocomplete-panel .p-autocomplete-option:hover {
+  background: #0d2232;
+  color: #ffffff;
+}

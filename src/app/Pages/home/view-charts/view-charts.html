@@ -1,0 +1,37 @@
+<div class="wellbore-charts-container">
+  <div class="charts-topbar">
+    <button
+      pButton
+      type="button"
+      icon="pi pi-arrow-left"
+      class="p-button-text back-btn"
+      (click)="goBackToHome()"
+      aria-label="Back">
+    </button>
+    <div class="well-title">{{ selectedWellTitle() }}</div>
+    <div class="chart-picker">
+      <p-autoComplete
+      
+        styleClass="chart-autocomplete"
+        panelStyleClass="chart-autocomplete-panel"
+        [(ngModel)]="selectedChartOption"
+        [suggestions]="filteredChartOptions"
+        (completeMethod)="filterChartOptions($event)"
+        field="label"
+        (onSelect)="onChartSelectionChange($event)"
+        placeholder="Select a Chart"
+        [dropdown]="true"
+        [forceSelection]="true"
+        [style]="{'min-width': '220px'}"
+        appendTo="body" />
+    </div>
+  </div>
+
+  <div class="charts-canvas">
+    <div *ngIf="isLoading" class="loading-overlay">
+      <p-progressSpinner strokeWidth="4" fill="transparent" animationDuration=".5s"></p-progressSpinner>
+    </div>
+
+    <div echarts [options]="chartOption" class="w-full h-full"></div>
+  </div>
+</div>
