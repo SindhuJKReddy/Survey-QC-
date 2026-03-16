@@ -17,7 +17,7 @@ export class Sidebar {
   // constructor(
   //   public commonService: CommonService,
   //   private signalRService: SignalrService,
-  //   private _communicationService: CommunicationService
+  //   private communicationService: CommunicationService
   // ) {
   //   this.getVersion();
   //   this.subscribeToConnectionStatus();
@@ -25,7 +25,7 @@ export class Sidebar {
   // }
 
   // getVersion() {
-  //   this._communicationService.getVersion().subscribe((data: any) => {
+  //   this.communicationService.getVersion().subscribe((data: any) => {
   //     this.applicationVersion = data;
   //   });
   // }
@@ -47,7 +47,7 @@ export class Sidebar {
   // }
 
   // simulationModeStatus() {
-  //   this._communicationService.getSimulationModeStatus().subscribe(data => {
+  //   this.communicationService.getSimulationModeStatus().subscribe(data => {
   //     this.simulationStatus = data;
   //   });
   // }

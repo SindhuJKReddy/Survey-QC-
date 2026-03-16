@@ -22,9 +22,10 @@ export class Card {
 
   Object = Object;
 
+  public commonService = inject(CommonService);
+  private communicationService = inject(CommunicationService);
+
   constructor(
-    public commonService: CommonService,
-    private _communicationService: CommunicationService
   ) {
     this.commonService.getMonitorWellBores();
   }
@@ -34,7 +35,7 @@ export class Card {
   }
 
   InitiateRunMSA(well: any) {
-    this._communicationService.ProcessWellboreForMSA(well.wellboreInfo.wellboreId.value).subscribe((data: any) => {
+    this.communicationService.ProcessWellboreForMSA(well.wellboreInfo.wellboreId.value).subscribe((data: any) => {
       if (data) {
         this.commonService.showNotification('success', 'MSA Initiated for ' + well.wellboreInfo.wellboreId.value, '')
       }

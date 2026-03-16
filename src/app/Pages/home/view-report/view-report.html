@@ -11,16 +11,16 @@
          (click)="goBackToHome()">
         </button>
       <h2>{{ reportWellLabel }}</h2>
-      <small>{{wellDataForPdf?.wellboreInfo?.wellId?.value}} - Report</small>
+      <small>{{wellDataForPdf()?.wellboreInfo?.wellId?.value}} - Report</small>
     </div>
     <div class="p-toolbar-group-right report-tool">
       <button pButton type="button" class="report-btn" label="Report Settings" icon="pi pi-cog" (click)="toggleReportSettings($event)"></button>
 
-      <div class="report-settings-dropdown" *ngIf="isReportSettingsOpen" (click)="$event.stopPropagation()">
+      <div class="report-settings-dropdown" *ngIf="isReportSettingsOpen()" (click)="$event.stopPropagation()">
         <button
           type="button"
           class="report-settings-item"
-          *ngFor="let setting of wellBoreDataForPdfData"
+          *ngFor="let setting of wellBoreDataForPdfData()"
           (click)="onReportSettingToggle(setting, $event)">
           <i class="pi pi-check" *ngIf="setting.isVisible"></i>
           <span class="check-placeholder" *ngIf="!setting.isVisible"></span>
@@ -40,9 +40,9 @@
             <div class="bg">
               <img src="bg.png">
               <h2>
-                {{ wellDataForPdf?.wellboreInfo?.wellboreId?.value }} Report<br />
+                {{ wellDataForPdf()?.wellboreInfo?.wellboreId?.value }} Report<br />
                 for<br />
-                {{ wellDataForPdf?.wellboreInfo?.customerName?.value ? wellDataForPdf?.wellboreInfo?.customerName?.value
+                {{ wellDataForPdf()?.wellboreInfo?.customerName?.value ? wellDataForPdf()?.wellboreInfo?.customerName?.value
                 : 'N/A' }}<br />
               </h2>
             </div>
@@ -52,35 +52,35 @@
             <table>
               <tr>
                 <td>Customer :</td>
-                <td class="text-left">{{ wellDataForPdf?.wellboreInfo?.customerName?.value || 'N/A' }}</td>
+                <td class="text-left">{{ wellDataForPdf()?.wellboreInfo?.customerName?.value || 'N/A' }}</td>
               </tr>
               <tr>
                 <td>Well Id :</td>
-                <td class="text-left">{{ wellDataForPdf?.wellboreInfo?.wellId?.value ?? 'N/A' }}</td>
+                <td class="text-left">{{ wellDataForPdf()?.wellboreInfo?.wellId?.value ?? 'N/A' }}</td>
               </tr>
               <tr>
                 <td>Wellbore Id :</td>
-                <td class="text-left">{{ wellDataForPdf?.wellboreInfo?.wellboreId?.value ?? 'N/A' }}</td>
+                <td class="text-left">{{ wellDataForPdf()?.wellboreInfo?.wellboreId?.value ?? 'N/A' }}</td>
               </tr>
               <tr>
                 <td>Service Company :</td>
                 <td>
-                  <div *ngFor="let company of wellDataForPdf?.wellboreInfo?.serviceCompanyInfos">
+                  <div *ngFor="let company of wellDataForPdf()?.wellboreInfo?.serviceCompanyInfos">
                     {{ company?.serviceCompany?.value ?? commonService.formatName(company?.name) ?? 'N/A' }}
                   </div>
                 </td>
               </tr>
               <tr>
                 <td>Latitude :</td>
-                <td>{{ commonService.formatLatitude(wellDataForPdf?.wellboreInfo?.latitude?.value) }}</td>
+                <td>{{ commonService.formatLatitude(wellDataForPdf()?.wellboreInfo?.latitude?.value) }}</td>
               </tr>
               <tr>
                 <td>Longitude :</td>
-                <td>{{ commonService.formatLongitude(wellDataForPdf?.wellboreInfo?.longitude?.value) }}</td>
+                <td>{{ commonService.formatLongitude(wellDataForPdf()?.wellboreInfo?.longitude?.value) }}</td>
               </tr>
               <tr>
                 <td>Report Date :</td>
-                <td class="text-left">{{ dateForPrintView | date: 'MM/dd/yyyy HH:mm:ss aa' }}</td>
+                <td class="text-left">{{ dateForPrintView() | date: 'MM/dd/yyyy HH:mm:ss aa' }}</td>
               </tr>
             </table>
 
@@ -124,8 +124,8 @@
                 <h2>Configuration Information</h2>
               </div>
               <div class="content survey-table">
-                <ng-container *ngIf="wellDataForPdf?.wellboreInfo?.serviceCompanyInfos?.length">
-                  <ng-container *ngFor="let company of wellDataForPdf?.wellboreInfo?.serviceCompanyInfos">
+                <ng-container *ngIf="wellDataForPdf()?.wellboreInfo?.serviceCompanyInfos?.length">
+                  <ng-container *ngFor="let company of wellDataForPdf()?.wellboreInfo?.serviceCompanyInfos">
                     <table *ngIf="company?.serviceCompany" style="min-width: 50%; font-size: 14px;">
                       <tr>
                         <td>Service Company :</td>
@@ -205,7 +205,7 @@
                 <h2>Survey Information</h2>
               </div>
               <div class="content survey-table">
-                <div *ngFor="let surveyInfo of wellDataForPdf?.processSummary">
+                <div *ngFor="let surveyInfo of wellDataForPdf()?.processSummary">
                   <table style="min-width: 50%; font-size: 14px;">
                     <tr>
                       <td>Name</td>
@@ -245,10 +245,10 @@
       </div>
 
       <div class="main-container">
-        <div class="common-content" *ngFor="let chart of chartOptionsForPdf; let i = index">
-          <div class="well-info-table" *ngIf="wellBoreDataForPdfData[i]?.isVisible">
+        <div class="common-content" *ngFor="let chart of chartOptionsForPdf(); let i = index">
+          <div class="well-info-table" *ngIf="wellBoreDataForPdfData()[i]?.isVisible">
             <div class="heading">
-              <h2>{{ wellBoreDataForPdfData[i]?.name }}</h2>
+              <h2>{{ wellBoreDataForPdfData()[i]?.name }}</h2>
             </div>
             <div class="charts-container">
               <div echarts [options]="chart" class="chart-container"
@@ -264,18 +264,18 @@
             <div class="heading">
               <h2>Surveys</h2>
             </div>
-            <div *ngIf="filteredWellBoreDataForPdf">
+            <div *ngIf="filteredWellBoreDataForPdf()">
               <table class="report">
                 <thead>
                   <tr>
-                    <th *ngFor="let header of wellboreSurveyHeadersForPdf" [style.width]="header.width">
+                    <th *ngFor="let header of wellboreSurveyHeadersForPdf()" [style.width]="header.width">
                       {{ header.label }}{{ header.unit ? ' (' + header.unit + ')' : '' }}
                     </th>
                   </tr>
                 </thead>
                 <tbody>
-                  <tr *ngFor="let row of filteredWellBoreDataForPdf">
-                    <td *ngFor="let header of wellboreSurveyHeadersForPdf" [style.width]="header.width">
+                  <tr *ngFor="let row of filteredWellBoreDataForPdf()">
+                    <td *ngFor="let header of wellboreSurveyHeadersForPdf()" [style.width]="header.width">
                       {{ isValidValue(row[header.key]) ? row[header.key] : '' }}
                     </td>
                   </tr>

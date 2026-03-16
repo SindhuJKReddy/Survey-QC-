@@ -17,7 +17,7 @@ import { TableModule } from 'primeng/table';
 export class Grid {
   constructor(
     public commonService: CommonService,
-    private _communicationService: CommunicationService
+    private communicationService: CommunicationService
   ) {}
  
   getAllServiceCompanyNames(companies: any[]): string {
@@ -25,7 +25,7 @@ export class Grid {
   }
  
   InitiateRunMSA(well: any) {
-    this._communicationService.ProcessWellboreForMSA(well.wellboreInfo.wellboreId.value).subscribe((data: any) => {
+    this.communicationService.ProcessWellboreForMSA(well.wellboreInfo.wellboreId.value).subscribe((data: any) => {
       if (data) {
         this.commonService.showNotification('success', 'MSA Initiated for ' + well.wellboreInfo.wellboreId.value, '');
       } else {

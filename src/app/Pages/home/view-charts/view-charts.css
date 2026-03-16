@@ -1,5 +1,5 @@
 .wellbore-charts-container {
-  min-height: calc(100vh - 40px);
+  height: 100vh;
   background: #142231;
   border: 1px solid #223140;
   border-radius: 8px;
@@ -50,8 +50,9 @@
 }
 
 .well-title {
-  font-size: 28px;
-  font-weight: 700;
+  color: rgba(192, 182, 182, 0.75);
+  font-size: 15px;
+  font-weight: 400;
   line-height: 1;
   margin-right: auto;
 }
@@ -63,7 +64,7 @@
 
 .charts-canvas {
   position: relative;
-  height: calc(100vh - 76px);
+  height: calc(100vh - 60px);
   min-height: 620px;
   background: radial-gradient(circle at top, #1b2a3a 0%, #16191f 60%);
 }

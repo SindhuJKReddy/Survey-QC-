@@ -1,3 +1,5 @@
+
+
 .report-container {
     --report-red: #c70000;
     --report-red-dark: #930000;
@@ -502,9 +504,9 @@
 
 :host ::ng-deep .report-container .p-toolbar-group-left h2 {
     margin: 0;
-    color: rgba(255, 255, 255, 0.75);
-    font-size: 18px;
-    font-weight: 500;
+    color: rgba(192, 182, 182, 0.75);
+    font-size: 14px;
+    font-weight: 350;
 }
 
 :host ::ng-deep .report-container .p-toolbar-group-left {

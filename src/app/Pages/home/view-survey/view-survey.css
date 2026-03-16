@@ -18,8 +18,8 @@
 .well-title {
 	margin: 0;
 	color: #e8f0f8;
-	font-size: 1.3rem;
-	font-weight: 600;
+	font-size: 1rem;
+    font-weight: 400;
 }
 
 .toolbar-start {
@@ -198,8 +198,41 @@
 	white-space: nowrap;
 }
 
+/* make the survey page fill the viewport and allow the table to expand */
+.survey {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    overflow: hidden;
+}
+
+.survey-table-wrapper {
+    flex: 1;
+    overflow: auto;
+}
+
+.survey-table-wrapper {
+    flex: 1;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+}
+
+:host ::ng-deep .survey-table {
+    width: 100%;
+    height: 100%;
+}
+
+:host ::ng-deep .survey-table .p-datatable-wrapper {
+    height: 100%;
+}
+
+:host ::ng-deep .survey-table .p-datatable-scrollable-body {
+    height: 100% !important;
+}
+
 :host ::ng-deep .survey-table .p-datatable-tbody > tr:hover > td {
-	background: #0a2538;
+	background: #0a1820;
 }
 
 :host ::ng-deep .survey-table .selected-row > td {

@@ -2,7 +2,8 @@ import {
   Component, HostListener,
   ViewChild,
   OnDestroy,
-  AfterViewInit
+  AfterViewInit,
+  signal
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
@@ -55,39 +56,44 @@ import { Router } from '@angular/router';
 })
 export class ViewSurvey implements AfterViewInit, OnDestroy {
 
-  // @ViewChild('dt') table!: Table;
-
   private destroy$ = new Subject<void>();
-  wellBoreRequestResponse: any;
-  wellboreSurveyData: Survey[] = [];
-  filteredSurveyData: Survey[] = [];
-  wellboreSurveyHeaders: any[] = [];
+  wellBoreRequestResponse = signal<any>(null);
+  wellboreSurveyData = signal<Survey[]>([]);
+  filteredSurveyData = signal<Survey[]>([]);
+  wellboreSurveyHeaders = signal<any[]>([]);
 
-  selectedSurveyType: string = "All";
-  selectedRows: number[] = [];
-  lastSelectedRow: number | null = null;
+  private _selectedSurveyType = signal<string>('All');
+  get selectedSurveyType() { return this._selectedSurveyType(); }
+  set selectedSurveyType(v: string) { this._selectedSurveyType.set(v); }
 
-  isCommentModalVisible = false;
-  comment = '';
+  selectedRows = signal<number[]>([]);
+  lastSelectedRow = signal<number | null>(null);
 
-  showMenu: boolean = false;
-  menuPosition = { x: 0, y: 0 };
-  currentSurvey: any;
-  showToolCodeMenu: boolean = false;
+  private _isCommentModalVisible = signal<boolean>(false);
+  get isCommentModalVisible() { return this._isCommentModalVisible(); }
+  set isCommentModalVisible(v: boolean) { this._isCommentModalVisible.set(v); }
 
-  // Enums
+  private _comment = signal<string>('');
+  get comment() { return this._comment(); }
+  set comment(v: string) { this._comment.set(v); }
+
+  showMenu = signal<boolean>(false);
+  menuPosition = signal<{ x: number; y: number }>({ x: 0, y: 0 });
+  currentSurvey = signal<any>(null);
+  showToolCodeMenu = signal<boolean>(false);
+
   public surveyStatusEnum = SurveyStatus;
   public surveyToolCodeEnum = UserSelectedToolCode;
   public surveyErrorStatusEnum = SurveyError;
 
   // Options for Dropdowns/Menus
-  surveyStatusOptions: any[] = [];
-  surveyToolCodeOptions: any[] = [];
-  rightClickStatusOptions: MenuItem[] = [];
-  rightClickToolCodeStatusOptions: MenuItem[] = [];
+  surveyStatusOptions = signal<any[]>([]);
+  surveyToolCodeOptions = signal<any[]>([]);
+  rightClickStatusOptions = signal<MenuItem[]>([]);
+  rightClickToolCodeStatusOptions = signal<MenuItem[]>([]);
 
   constructor(
-    private _communicationService: CommunicationService,
+    private communicationService: CommunicationService,
     public _commonService: CommonService,
     private router: Router
   ) {
@@ -130,56 +136,51 @@ export class ViewSurvey implements AfterViewInit, OnDestroy {
       .filter(k => isNaN(Number(k)))
       .map(k => ({ label: k, value: en[k as keyof typeof en] }));
 
-    this.surveyStatusOptions = mapEnum(this.surveyStatusEnum);
-    this.surveyToolCodeOptions = mapEnum(this.surveyToolCodeEnum);
+    this.surveyStatusOptions.set(mapEnum(this.surveyStatusEnum));
+    this.surveyToolCodeOptions.set(mapEnum(this.surveyToolCodeEnum));
   }
 
   private generateContextMenuOptions(): void {
-    // 1. Survey Status Context Menu
-    this.rightClickStatusOptions = Object.keys(this.surveyStatusEnum)
+    this.rightClickStatusOptions.set(Object.keys(this.surveyStatusEnum)
       .filter(key => {
-        // Filter out the numeric keys (reverse mapping) and restricted statuses
         const isStringKey = isNaN(Number(key));
         if (!isStringKey) return false;
-
         const enumValue = this.surveyStatusEnum[key as keyof typeof SurveyStatus];
         return enumValue !== SurveyStatus.AutoApproved &&
           enumValue !== SurveyStatus.AutoRejected;
       })
       .map(key => ({
         label: key,
-        // Cast key to access the numeric value to pass to onSelectSurveyStatus
         command: () => {
           const statusValue = this.surveyStatusEnum[key as keyof typeof SurveyStatus] as unknown as number;
           this.onSelectSurveyStatus(statusValue);
         }
-      }));
+      })));
 
-    // 2. Tool Code Context Menu
-    this.rightClickToolCodeStatusOptions = Object.keys(this.surveyToolCodeEnum)
-      .filter(key => isNaN(Number(key))) // Keep only string labels
+    this.rightClickToolCodeStatusOptions.set(Object.keys(this.surveyToolCodeEnum)
+      .filter(key => isNaN(Number(key)))
       .map(key => ({
         label: key,
         command: () => {
           const toolCodeValue = this.surveyToolCodeEnum[key as keyof typeof UserSelectedToolCode] as unknown as number;
           this.onSelectToolCode(toolCodeValue);
         }
-      }));
+      })));
   }
 
   getWellboreSurveys(wellboreId: string): void {
-    this.wellBoreRequestResponse = [];
-    this.wellboreSurveyData = [];
-    this.selectedRows = [];
+    this.wellBoreRequestResponse.set(null);
+    this.wellboreSurveyData.set([]);
+    this.selectedRows.set([]);
     showLoader(true, 'Retrieving Surveys...');
 
-    this._communicationService.getWellboreSurveys(wellboreId)
+    this.communicationService.getWellboreSurveys(wellboreId)
       .pipe(takeUntil(this.destroy$))
       .subscribe(data => {
-        this.wellBoreRequestResponse = data;
+        this.wellBoreRequestResponse.set(data);
 
         if (data) {
-          this.wellboreSurveyData = data.wellboreSurveys
+          this.wellboreSurveyData.set(data.wellboreSurveys
             .map((item: Survey) => ({
               id: item.id,
               surveyStatus: item.surveyStatus,
@@ -212,10 +213,10 @@ export class ViewSurvey implements AfterViewInit, OnDestroy {
               longCollarAzimuth: item.longCollarAzimuth?.value,
               shortCollarAzimuth: item.shortCollarAzimuth?.value,
             }))
-            .sort((a: any, b: any) => a.measuredDepth - b.measuredDepth);
+            .sort((a: any, b: any) => a.measuredDepth - b.measuredDepth));
 
-          if (this.wellboreSurveyData.length > 0) {
-            const surveys = this.wellBoreRequestResponse.wellboreSurveys;
+          if (this.wellboreSurveyData().length > 0) {
+            const surveys = this.wellBoreRequestResponse().wellboreSurveys;
             const getUnit = (key: string): string => {
               for (const survey of surveys) {
                 if (survey?.[key]?.valueUnit) return survey[key].valueUnit;
@@ -223,7 +224,7 @@ export class ViewSurvey implements AfterViewInit, OnDestroy {
               return '';
             };
 
-            this.wellboreSurveyHeaders = [
+            this.wellboreSurveyHeaders.set([
               { key: 'surveyStatus', label: 'Survey Status', width: '120px' },
               { key: 'overrideToolCode', label: 'Survey Type', width: '120px' },
               { key: 'serviceCompany', label: 'Service Company', width: '180px' },
@@ -251,7 +252,7 @@ export class ViewSurvey implements AfterViewInit, OnDestroy {
               { key: 'msaService', label: 'MSA Service', width: '150px' },
               { key: 'msaComments', label: 'MSA Comments', width: '150px' },
               { key: 'messages', label: 'Message', width: '120px' },
-            ];
+            ]);
           }
         }
 
@@ -262,101 +263,109 @@ export class ViewSurvey implements AfterViewInit, OnDestroy {
 
   onSurveyTypeChange(): void {
     if (this.selectedSurveyType === 'All') {
-      this.filteredSurveyData = [...this.wellboreSurveyData];
+      this.filteredSurveyData.set([...this.wellboreSurveyData()]);
     }
     else if (this.selectedSurveyType === 'Gyro') {
       const targetToolCode = this.surveyToolCodeEnum[this.selectedSurveyType as keyof typeof UserSelectedToolCode];
-      this.filteredSurveyData = this.wellboreSurveyData.filter(
+      this.filteredSurveyData.set(this.wellboreSurveyData().filter(
         item => item.overrideToolCode === targetToolCode
-      );
+      ));
     }
     else {
       const statusMapping = this.surveyStatusEnum[this.selectedSurveyType as keyof typeof SurveyStatus];
-      this.filteredSurveyData = this.wellboreSurveyData.filter(item => item.surveyStatus === statusMapping);
+      this.filteredSurveyData.set(this.wellboreSurveyData().filter(item => item.surveyStatus === statusMapping));
     }
   }
 
   onRowClick(event: MouseEvent, index: number): void {
-    if (event.shiftKey && this.lastSelectedRow !== null) {
-      const start = Math.min(this.lastSelectedRow, index);
-      const end = Math.max(this.lastSelectedRow, index);
-      for (let i = start; i <= end; i++) {
-        if (!this.selectedRows.includes(i)) this.selectedRows.push(i);
-      }
+    if (event.shiftKey && this.lastSelectedRow() !== null) {
+      const start = Math.min(this.lastSelectedRow()!, index);
+      const end = Math.max(this.lastSelectedRow()!, index);
+      this.selectedRows.update(arr => {
+        const copy = [...arr];
+        for (let i = start; i <= end; i++) {
+          if (!copy.includes(i)) copy.push(i);
+        }
+        return copy;
+      });
     } else if (event.ctrlKey || event.metaKey) {
-      const selectedIndex = this.selectedRows.indexOf(index);
-      selectedIndex > -1 ? this.selectedRows.splice(selectedIndex, 1) : this.selectedRows.push(index);
+      this.selectedRows.update(arr => {
+        const copy = [...arr];
+        const idx = copy.indexOf(index);
+        idx > -1 ? copy.splice(idx, 1) : copy.push(index);
+        return copy;
+      });
     } else {
-      this.selectedRows = [index];
+      this.selectedRows.set([index]);
     }
-    this.lastSelectedRow = index;
+    this.lastSelectedRow.set(index);
   }
 
   onRightClick(event: MouseEvent, survey: any, index: number): void {
     event.preventDefault();
-    if (!this.selectedRows.includes(index)) {
-      this.selectedRows = [index];
+    if (!this.selectedRows().includes(index)) {
+      this.selectedRows.set([index]);
     }
-    this.lastSelectedRow = index;
-    this.showMenu = true;
-    this.currentSurvey = survey;
-    this.menuPosition = { x: event.clientX, y: event.clientY };
+    this.lastSelectedRow.set(index);
+    this.showMenu.set(true);
+    this.currentSurvey.set(survey);
+    this.menuPosition.set({ x: event.clientX, y: event.clientY });
   }
 
   onToolCodeRightClick(event: MouseEvent, survey: any, index: number): void {
     event.preventDefault();
-    if (!this.selectedRows.includes(index)) {
-      this.selectedRows = [index];
+    if (!this.selectedRows().includes(index)) {
+      this.selectedRows.set([index]);
     }
-    this.lastSelectedRow = index;
-    this.showToolCodeMenu = true;
-    this.currentSurvey = survey;
-    this.menuPosition = { x: event.clientX, y: event.clientY };
+    this.lastSelectedRow.set(index);
+    this.showToolCodeMenu.set(true);
+    this.currentSurvey.set(survey);
+    this.menuPosition.set({ x: event.clientX, y: event.clientY });
   }
 
   onSelectSurveyStatus(status: number): void {
-    this.selectedRows.forEach(index => {
-      const survey = this.filteredSurveyData[index];
+    this.selectedRows().forEach(index => {
+      const survey = this.filteredSurveyData()[index];
       if (survey) {
         survey.surveyStatus = status;
-        const mainIdx = this.wellboreSurveyData.findIndex(item => item.id === survey.id);
-        if (mainIdx !== -1) this.wellboreSurveyData[mainIdx].surveyStatus = status;
+        const mainIdx = this.wellboreSurveyData().findIndex(item => item.id === survey.id);
+        if (mainIdx !== -1) this.wellboreSurveyData()[mainIdx].surveyStatus = status;
       }
     });
     this.isCommentModalVisible = true;
   }
 
   onSelectToolCode(status: number): void {
-    this.selectedRows.forEach(index => {
-      const survey = this.filteredSurveyData[index];
+    this.selectedRows().forEach(index => {
+      const survey = this.filteredSurveyData()[index];
       if (survey) {
         survey.overrideToolCode = status;
-        const mainIdx = this.wellboreSurveyData.findIndex(item => item.id === survey.id);
-        if (mainIdx !== -1) this.wellboreSurveyData[mainIdx].overrideToolCode = status;
+        const mainIdx = this.wellboreSurveyData().findIndex(item => item.id === survey.id);
+        if (mainIdx !== -1) this.wellboreSurveyData()[mainIdx].overrideToolCode = status;
       }
     });
     this.handleOk();
   }
 
   onSurveyToolCodeChange(survey: any) {
-    const mainIdx = this.wellboreSurveyData.findIndex(item => item.id === survey.id);
-    if (mainIdx !== -1) this.wellboreSurveyData[mainIdx].overrideToolCode = Number(survey.overrideToolCode);
+    const mainIdx = this.wellboreSurveyData().findIndex(item => item.id === survey.id);
+    if (mainIdx !== -1) this.wellboreSurveyData()[mainIdx].overrideToolCode = Number(survey.overrideToolCode);
     this.handleOk();
   }
 
   onSurveyStatusChange(survey: any): void {
-    const mainIdx = this.wellboreSurveyData.findIndex(item => item.id === survey.id);
-    if (mainIdx !== -1) this.wellboreSurveyData[mainIdx].surveyStatus = Number(survey.surveyStatus);
+    const mainIdx = this.wellboreSurveyData().findIndex(item => item.id === survey.id);
+    if (mainIdx !== -1) this.wellboreSurveyData()[mainIdx].surveyStatus = Number(survey.surveyStatus);
     this.isCommentModalVisible = true;
   }
 
   handleCancel(): void {
     this.isCommentModalVisible = false;
     this.comment = '';
-    this.selectedRows.forEach(index => {
-      const survey = this.filteredSurveyData[index];
+    this.selectedRows().forEach(index => {
+      const survey = this.filteredSurveyData()[index];
       if (survey) {
-        const original = this.wellBoreRequestResponse.wellboreSurveys.find((item: any) => item.id === survey.id);
+        const original = this.wellBoreRequestResponse().wellboreSurveys.find((item: any) => item.id === survey.id);
         if (original) {
           survey.surveyStatus = original.surveyStatus;
           survey.comment = original.comment || '';
@@ -366,28 +375,32 @@ export class ViewSurvey implements AfterViewInit, OnDestroy {
   }
 
   handleOk(): void {
-    const payload = this.selectedRows.map(rowIndex => ({
-      wellboreId: this.wellBoreRequestResponse.wellboreState.wellboreInfo.wellboreId.value,
-      wellboreSurveyId: this.filteredSurveyData[rowIndex]?.id,
-      surveyStatus: Number(this.filteredSurveyData[rowIndex]?.surveyStatus),
-      toolCode: Number(this.filteredSurveyData[rowIndex]?.overrideToolCode),
+    const payload = this.selectedRows().map(rowIndex => ({
+      wellboreId: this.wellBoreRequestResponse().wellboreState.wellboreInfo.wellboreId.value,
+      wellboreSurveyId: this.filteredSurveyData()[rowIndex]?.id,
+      surveyStatus: Number(this.filteredSurveyData()[rowIndex]?.surveyStatus),
+      toolCode: Number(this.filteredSurveyData()[rowIndex]?.overrideToolCode),
       comment: this.comment,
     }));
 
     showLoader(true, 'Updating Survey Status...');
 
-    this._communicationService.updateWellboreSurveyStatus(payload).subscribe((data: boolean) => {
+    this.communicationService.updateWellboreSurveyStatus(payload).subscribe((data: boolean) => {
       showLoader(false);
       if (data) {
-        this.filteredSurveyData = this.filteredSurveyData.map((survey: any, index: number) => {
-          if (this.selectedRows.includes(index)) {
-            const updated = { ...survey, surveyStatus: this.filteredSurveyData[index].surveyStatus, comment: this.comment };
-            const mainIdx = this.wellboreSurveyData.findIndex(item => item.id === survey.id);
-            if (mainIdx !== -1) this.wellboreSurveyData[mainIdx] = { ...this.wellboreSurveyData[mainIdx], ...updated };
+        const currentFiltered = this.filteredSurveyData();
+        const newWb = [...this.wellboreSurveyData()];
+        const newFiltered = currentFiltered.map((survey: any, index: number) => {
+          if (this.selectedRows().includes(index)) {
+            const updated = { ...survey, surveyStatus: currentFiltered[index].surveyStatus, comment: this.comment };
+            const mainIdx = newWb.findIndex(item => item.id === survey.id);
+            if (mainIdx !== -1) newWb[mainIdx] = { ...newWb[mainIdx], ...updated };
             return updated;
           }
           return survey;
         });
+        this.wellboreSurveyData.set(newWb);
+        this.filteredSurveyData.set(newFiltered);
       }
       this.isCommentModalVisible = false;
       this.comment = '';
@@ -395,8 +408,8 @@ export class ViewSurvey implements AfterViewInit, OnDestroy {
   }
 
   closeContextMenu(): void {
-    this.showMenu = false;
-    this.showToolCodeMenu = false;
+    this.showMenu.set(false);
+    this.showToolCodeMenu.set(false);
   }
 
   getAllServiceCompanyNames(company: any): string {
@@ -408,26 +421,26 @@ export class ViewSurvey implements AfterViewInit, OnDestroy {
   }
 
   InitiateRunMSA() {
-    const id = this.wellBoreRequestResponse?.wellboreState?.wellboreInfo?.wellboreId?.value;
+    const id = this.wellBoreRequestResponse()?.wellboreState?.wellboreInfo?.wellboreId?.value;
     if (!id) {
       this._commonService.showNotification('error', 'Unable to identify wellbore', '');
       return;
     }
-    this._communicationService.ProcessWellboreForMSA(id).subscribe((data: any) => {
+    this.communicationService.ProcessWellboreForMSA(id).subscribe((data: any) => {
       const msg = data ? 'MSA Initiated for ' : 'Failed to Initiate MSA for ';
       this._commonService.showNotification(data ? 'success' : 'error', msg + id, '');
     });
   }
 
   exportTableToExcel(fileName: string): void {
-    if (!this.filteredSurveyData || this.filteredSurveyData.length === 0) return;
+    if (!this.filteredSurveyData().length) return;
 
-    const headers = this.wellboreSurveyHeaders.map(h => h.label + (h.unit ? ` (${h.unit})` : ''));
-    const statusIdx = this.wellboreSurveyHeaders.findIndex(h => h.key === 'surveyStatus');
+    const headers = this.wellboreSurveyHeaders().map(h => h.label + (h.unit ? ` (${h.unit})` : ''));
+    const statusIdx = this.wellboreSurveyHeaders().findIndex(h => h.key === 'surveyStatus');
     if (statusIdx !== -1) headers.splice(statusIdx + 1, 0, 'Errors');
 
-    const rows = this.filteredSurveyData.map(data => {
-      return this.wellboreSurveyHeaders.flatMap((header) => {
+    const rows = this.filteredSurveyData().map(data => {
+      return this.wellboreSurveyHeaders().flatMap((header) => {
         let val = data[header.key as keyof Survey];
         if (header.key === 'surveyStatus') {
           const errs = (data as any).errors?.length ? (data as any).errors.flatMap((e: any) => e.errorMessages || []).join('; ') : '';

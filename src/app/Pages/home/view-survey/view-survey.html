@@ -1,190 +1,135 @@
 <div class="survey">
-    <p-toolbar 
-       styleClass="survey-toolbar">
+    <p-toolbar styleClass="survey-toolbar">
         <ng-template pTemplate="start">
             <div class="toolbar-start">
-                <button
-                   pButton
-                   type="button"
-                   icon="pi pi-arrow-left"
-                   class="p-button-text back-arrow-btn"
-                   (click)="goBackToHome()">
+                <button pButton type="button" icon="pi pi-arrow-left" class="p-button-text back-arrow-btn"
+                    (click)="goBackToHome()">
                 </button>
 
                 <h3 class="well-title">
-                    {{ wellBoreRequestResponse?.wellboreState?.wellboreInfo?.wellboreId?.value }}
+                    {{ wellBoreRequestResponse()?.wellboreState?.wellboreInfo?.wellboreId?.value }}
                 </h3>
             </div>
         </ng-template>
 
         <ng-template pTemplate="end">
             <div class="survey-type-radio-group">
-               <div *ngFor="let option of surveyTypeOptions" class="field-radiobutton">
-    
-               <p-radioButton
-                 name="surveyType"
-                 [value]="option.value"
-                 [(ngModel)]="selectedSurveyType"
-                 (onClick)="onSurveyTypeChange()">
-               </p-radioButton>
+                <div *ngFor="let option of surveyTypeOptions" class="field-radiobutton">
 
-               <label class="ml-2">{{ option.label }}</label>
+                    <p-radioButton name="surveyType" [value]="option.value" [(ngModel)]="selectedSurveyType"
+                        (onClick)="onSurveyTypeChange()">
+                    </p-radioButton>
 
-             </div>
-           </div>
+                    <label class="ml-2">{{ option.label }}</label>
 
-            <button 
-               pButton 
-               label="MSA" 
-               class="p-button-secondary msa-btn" 
-               (click)="InitiateRunMSA()">
+                </div>
+            </div>
+
+            <button pButton label="MSA" class="p-button-secondary msa-btn" (click)="InitiateRunMSA()">
             </button>
 
-            <button 
-               pButton 
-               label="Export" 
-               icon="pi pi-download" 
-               class="p-button-primary"
-               (click)="exportTableToExcel('Survey')">
+            <button pButton label="Export" icon="pi pi-download" class="p-button-primary"
+                (click)="exportTableToExcel('Survey')">
             </button>
         </ng-template>
     </p-toolbar>
+    <div class="survey-table-wrapper">
+        <p-table 
+           #dt 
+           [value]="filteredSurveyData()" 
+           [scrollable]="true"
+           scrollHeight="flex"
+           [virtualScroll]="true"
+           [virtualScrollItemSize]="30" 
+           [rows]="100" 
+           dataKey="id"
+           styleClass="survey-table p-datatable-sm p-datatable-gridlines">
 
-    <p-table 
-       #dt 
-       [value]="filteredSurveyData" 
-       [scrollable]="true" 
-       scrollHeight="calc(100vh - 50px)"
-       [virtualScroll]="true" 
-       [virtualScrollItemSize]="30" 
-       [rows]="100" 
-       dataKey="id"
-    styleClass="survey-table p-datatable-sm p-datatable-gridlines">
+            <ng-template pTemplate="header">
+                <tr>
+                    <th *ngFor="let header of wellboreSurveyHeaders()">
+                        {{ header.label }}
+                        <span *ngIf="header.unit">({{ header.unit }})</span>
+                    </th>
+                </tr>
+            </ng-template>
 
-        <ng-template pTemplate="header">
-            <tr>
-                <th *ngFor="let header of wellboreSurveyHeaders">
-                    {{ header.label }}
-                    <span *ngIf="header.unit">({{ header.unit }})</span>
-                </th>
-            </tr>
-        </ng-template>
+            <ng-template pTemplate="body" let-data let-rowIndex="rowIndex">
+                <tr [ngClass]="{'selected-row': selectedRows().includes(rowIndex)}"
+                    (click)="onRowClick($event, rowIndex)">
 
-        <ng-template 
-           pTemplate="body" 
-           let-data let-rowIndex="rowIndex">
-            <tr 
-               [ngClass]="{'selected-row': selectedRows.includes(rowIndex)}" 
-               (click)="onRowClick($event, rowIndex)">
+                    <td class="darker-cell" (contextmenu)="onRightClick($event, data, rowIndex)">
+                        <div class="status-cell-wrap">
+                            <p-select [options]="surveyStatusOptions()" [(ngModel)]="data.surveyStatus"
+                                optionLabel="label" optionValue="value" panelStyleClass="survey-dropdown-panel"
+                                (onChange)="onSurveyStatusChange(data)" class="w-full survey-cell-select">
+                            </p-select>
 
-                <td (contextmenu)="onRightClick($event, data, rowIndex)">
-                    <div class="status-cell-wrap">
-                        <p-select 
-                           [options]="surveyStatusOptions" 
-                           [(ngModel)]="data.surveyStatus" 
-                           optionLabel="label"
-                           optionValue="value" 
-                                    panelStyleClass="survey-dropdown-panel"
-                           (onChange)="onSurveyStatusChange(data)" 
-                                    class="w-full survey-cell-select">
-                        </p-select>
-
-                                                <span
-                                                    *ngIf="data?.errors?.length > 0"
-                                                    class="status-error-icon"
-                                                    [pTooltip]="getErrorMessage(data)"
-                                                    tooltipStyleClass="survey-error-tooltip"
-                                                    tooltipPosition="right">
-                                                </span>
-                    </div>
-                </td>
+                            <span *ngIf="data?.errors?.length > 0" class="status-error-icon"
+                                [pTooltip]="getErrorMessage(data)" tooltipStyleClass="survey-error-tooltip"
+                                tooltipPosition="right">
+                            </span>
+                        </div>
+                    </td>
 
 
-                <td 
-                    class="table-column"
-                    (contextmenu)="data.surveyStatus !== surveyStatusEnum.AutoApproved ? onToolCodeRightClick($event, data, rowIndex) : null">
+                    <td class="table-column darker-cell"
+                        (contextmenu)="data.surveyStatus !== surveyStatusEnum.AutoApproved ? onToolCodeRightClick($event, data, rowIndex) : null">
 
-                                        <div class="flex">
-                        <p-select 
-                            [options]="surveyToolCodeOptions" 
-                            [(ngModel)]="data.overrideToolCode"
-                            optionLabel="label" 
-                            optionValue="value" 
-                            panelStyleClass="survey-dropdown-panel"
-                            (onChange)="onSurveyToolCodeChange(data)"
-                            class="w-full survey-cell-select">
-                        </p-select>
-                    </div>
+                        <div class="flex">
+                            <p-select [options]="surveyToolCodeOptions()" [(ngModel)]="data.overrideToolCode"
+                                optionLabel="label" optionValue="value" panelStyleClass="survey-dropdown-panel"
+                                (onChange)="onSurveyToolCodeChange(data)" class="w-full survey-cell-select">
+                            </p-select>
+                        </div>
 
-                </td>
+                    </td>
 
-                <td>{{ data?.serviceCompany }}</td>
-                <td>{{ formatNumber(data?.gravAxialRaw) }}</td>
-                <td>{{ formatNumber(data?.gravTran1Raw) }}</td>
-                <td>{{ formatNumber(data?.gravTran2Raw) }}</td>
-                <td>{{ formatNumber(data?.magAxialRaw) }}</td>
-                <td>{{ formatNumber(data?.magTran1Raw) }}</td>
-                <td>{{ formatNumber(data?.magTran2Raw) }}</td>
-                <td>{{ formatNumber(data?.inclination) }}</td>
-                <td>{{ formatNumber(data?.calculatedInclination) }}</td>
-                <td>{{ formatNumber(data?.azimuth) }}</td>
-                <td>{{ formatNumber(data?.calculatedAzimuth) }}</td>
-                <td>{{ formatNumber(data?.measuredDepth) }}</td>
-                <td>{{ data?.toolCode?.value }}</td>
-                <td>{{ formatNumber(data?.shortCollarAzimuth) }}</td>
-                <td>{{ formatNumber(data?.longCollarAzimuth) }}</td>
-                <td>{{ formatNumber(data?.iFR1ShortCollarAzimuth) }}</td>
-                <td>{{ formatNumber(data?.iFR1LongCollarAzimuth) }}</td>
-                <td>{{ formatNumber(data?.msaSolutionAz) }}</td>
-                <td>{{ formatNumber(data?.msaSolutionInc) }}</td>
-                <td>{{ formatNumber(data?.msaSolutionBt) }}</td>
-                <td>{{ formatNumber(data?.msaSolutionGt) }}</td>
-                <td>{{ formatNumber(data?.msaSolutionDip) }}</td>
-                <td>{{ data?.msaService }}</td>
-                <td>{{ data?.msaComments }}</td>
+                    <td>{{ data?.serviceCompany }}</td>
+                    <td>{{ formatNumber(data?.gravAxialRaw) }}</td>
+                    <td>{{ formatNumber(data?.gravTran1Raw) }}</td>
+                    <td>{{ formatNumber(data?.gravTran2Raw) }}</td>
+                    <td>{{ formatNumber(data?.magAxialRaw) }}</td>
+                    <td>{{ formatNumber(data?.magTran1Raw) }}</td>
+                    <td>{{ formatNumber(data?.magTran2Raw) }}</td>
+                    <td>{{ formatNumber(data?.inclination) }}</td>
+                    <td>{{ formatNumber(data?.calculatedInclination) }}</td>
+                    <td>{{ formatNumber(data?.azimuth) }}</td>
+                    <td>{{ formatNumber(data?.calculatedAzimuth) }}</td>
+                    <td>{{ formatNumber(data?.measuredDepth) }}</td>
+                    <td>{{ data?.toolCode?.value }}</td>
+                    <td>{{ formatNumber(data?.shortCollarAzimuth) }}</td>
+                    <td>{{ formatNumber(data?.longCollarAzimuth) }}</td>
+                    <td>{{ formatNumber(data?.iFR1ShortCollarAzimuth) }}</td>
+                    <td>{{ formatNumber(data?.iFR1LongCollarAzimuth) }}</td>
+                    <td>{{ formatNumber(data?.msaSolutionAz) }}</td>
+                    <td>{{ formatNumber(data?.msaSolutionInc) }}</td>
+                    <td>{{ formatNumber(data?.msaSolutionBt) }}</td>
+                    <td>{{ formatNumber(data?.msaSolutionGt) }}</td>
+                    <td>{{ formatNumber(data?.msaSolutionDip) }}</td>
+                    <td>{{ data?.msaService }}</td>
+                    <td>{{ data?.msaComments }}</td>
 
-                <td>
-                    <i 
-                      *ngIf="data?.comment" 
-                      class="pi pi-comment text-blue-500" 
-                      pTooltip="{{ data?.comment }}">
-                    </i>
-                </td>
+                    <td>
+                        <i *ngIf="data?.comment" class="pi pi-comment text-blue-500" pTooltip="{{ data?.comment }}">
+                        </i>
+                    </td>
 
-            </tr>
-        </ng-template>
-    </p-table>
-
+                </tr>
+            </ng-template>
+        </p-table>
+    </div>
 </div>
 
-<p-dialog 
-   header="Add Comment" 
-   [(visible)]="isCommentModalVisible" 
-   [modal]="true" 
-   [style]="{width: '400px'}">
+<p-dialog header="Add Comment" [(visible)]="isCommentModalVisible" [modal]="true" [style]="{width: '400px'}">
 
-    <textarea 
-       pInputTextarea 
-       [(ngModel)]="comment"
-        rows="4" 
-        class="w-full">
+    <textarea pInputTextarea [(ngModel)]="comment" rows="4" class="w-full">
   </textarea>
 
-    <ng-template 
-    pTemplate="footer">
-        <button 
-           pButton 
-           label="Cancel" 
-           class="p-button-text" 
-           (click)="handleCancel()"
-           >
+    <ng-template pTemplate="footer">
+        <button pButton label="Cancel" class="p-button-text" (click)="handleCancel()">
         </button>
-        <button 
-           pButton 
-           label="Save" 
-           class="p-button-primary" 
-           (click)="handleOk()"
-           >
+        <button pButton label="Save" class="p-button-primary" (click)="handleOk()">
         </button>
     </ng-template>
 

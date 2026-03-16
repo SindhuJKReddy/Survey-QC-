@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, HostListener, inject, OnInit } from '@angular/core';
+import { Component, HostListener, inject, OnInit, signal } from '@angular/core';
 import { NGX_ECHARTS_CONFIG, NgxEchartsModule } from 'ngx-echarts';
 import { ButtonModule } from 'primeng/button';
 import { FormsModule } from '@angular/forms';
@@ -52,14 +52,14 @@ export class ViewReport implements OnInit {
 
   private readonly REPORT_WELLBORE_ID_KEY = 'reportSelectedWellboreId';
 
-  public wellBoreRequestResponse: any[] = [];
-  public wellDataForPdf: any = null;
-  public wellBoreDataForPdf: any[] = [];
-  public filteredWellBoreDataForPdf: any[] = [];
-  public wellboreSurveyHeadersForPdf: any[] = [];
-  public dateForPrintView: Date = new Date();
-  public originalWellBoreDataForCharts: any;
-  public wellBoreDataForPdfData: Array<{
+  public wellBoreRequestResponse = signal<any[]>([]);
+  public wellDataForPdf = signal<any>(null);
+  public wellBoreDataForPdf = signal<any[]>([]);
+  public filteredWellBoreDataForPdf = signal<any[]>([]);
+  public wellboreSurveyHeadersForPdf = signal<any[]>([]);
+  public dateForPrintView = signal<Date>(new Date());
+  public originalWellBoreDataForCharts = signal<any>(null);
+  public wellBoreDataForPdfData = signal<Array<{
     isVisible: boolean;
     name: string;
     xAxisName: string;
@@ -70,22 +70,22 @@ export class ViewReport implements OnInit {
       color: string;
       data: Array<{ x: string | number; y: number }>;
     }>;
-  }> = [];
-  chartOptionsForPdf: EChartsOption[] = [];
-  chartOptionsForPdfInstances: EChartsType[] = [];
-  chartDataArray: any[] = [];
-  chartDataArrayForPdf: any[] = [];
-  public selectedAzimuthType: number = 2;
-  public reportVisibleArr: any[] = []
-  public reportSettingItems: MenuItem[] = [];
-  public isReportSettingsOpen = false;
+  }>>([]);
+  chartOptionsForPdf = signal<EChartsOption[]>([]);
+  chartOptionsForPdfInstances = signal<EChartsType[]>([]);
+  chartDataArray = signal<any[]>([]);
+  chartDataArrayForPdf = signal<any[]>([]);
+  public selectedAzimuthType = signal<number>(2);
+  public reportVisibleArr = signal<any[]>([]);
+  public reportSettingItems = signal<MenuItem[]>([]);
+  public isReportSettingsOpen = signal<boolean>(false);
 
   public commonService = inject(CommonService);
-  private _communicationService = inject(CommunicationService);
+  private communicationService = inject(CommunicationService);
   private _router = inject(Router);
 
   get reportWellLabel(): string {
-    const info = this.wellDataForPdf?.wellboreInfo;
+    const info = this.wellDataForPdf()?.wellboreInfo;
     const wellId = info?.wellId?.value;
     return wellId ? `${wellId} - Report` : 'Well Report';
   }
@@ -96,19 +96,20 @@ export class ViewReport implements OnInit {
 
   public toggleReportSettings(event: MouseEvent): void {
     event.stopPropagation();
-    this.isReportSettingsOpen = !this.isReportSettingsOpen;
+    this.isReportSettingsOpen.update(v => !v);
   }
 
   public onReportSettingToggle(setting: { isVisible: boolean }, event?: MouseEvent): void {
     event?.stopPropagation();
     setting.isVisible = !setting.isVisible;
+    this.wellBoreDataForPdfData.update(arr => [...arr]);
     this.buildReportSettingItems();
     this.generateChartOptionsForPdf();
   }
 
   @HostListener('document:click')
   public closeReportSettingsOnOutsideClick(): void {
-    this.isReportSettingsOpen = false;
+    this.isReportSettingsOpen.set(false);
   }
 
   ngOnInit(): void {
@@ -124,7 +125,7 @@ export class ViewReport implements OnInit {
   }
 
   private restoreReportSelection(): void {
-    if (this.wellDataForPdf) {
+    if (this.wellDataForPdf()) {
       return;
     }
 
@@ -164,7 +165,7 @@ export class ViewReport implements OnInit {
       return;
     }
 
-    this._communicationService.getMonitoredWellbores().subscribe((wells: any[]) => {
+    this.communicationService.getMonitoredWellbores().subscribe((wells: any[]) => {
       const matchedWell = wells?.find((well: any) => well?.wellboreInfo?.wellboreId?.value === wellboreId);
       if (!matchedWell) {
         return;
@@ -189,7 +190,7 @@ export class ViewReport implements OnInit {
     }
     this.commonService.lastSelectedWellboreId = well.wellboreInfo.wellboreId.value;
     sessionStorage.setItem(this.REPORT_WELLBORE_ID_KEY, well.wellboreInfo.wellboreId.value);
-    this.wellDataForPdf = well;
+    this.wellDataForPdf.set(well);
     const wellId = well.wellboreInfo.wellboreId.value;
 
     const loadReportData = () => this.wellBoreDataForPdfReport(wellId);
@@ -199,7 +200,7 @@ export class ViewReport implements OnInit {
       return;
     }
 
-    this._communicationService.getFacLimits().subscribe({
+    this.communicationService.getFacLimits().subscribe({
       next: (limits: any) => {
         if (limits) {
           this.commonService.facConfiguration = limits;
@@ -226,23 +227,23 @@ export class ViewReport implements OnInit {
   wellBoreDataForPdfReport(wellboreId: string): void {
     showLoader(true, 'Loading Report')
 
-    this._communicationService.getWellboreSurveys(wellboreId).subscribe(data => {
+    this.communicationService.getWellboreSurveys(wellboreId).subscribe(data => {
       showLoader(false);
 
-      this.wellBoreRequestResponse = data?.wellboreSurveys
+      this.wellBoreRequestResponse.set(data?.wellboreSurveys)
       if (!data?.wellboreSurveys?.length) {
-        this.wellBoreDataForPdf = [];
-        this.filteredWellBoreDataForPdf = [];
-        this.wellBoreDataForPdfData = []
-        this.wellboreSurveyHeadersForPdf = [];
+        this.wellBoreDataForPdf.set([]);
+        this.filteredWellBoreDataForPdf.set([]);
+        this.wellBoreDataForPdfData.set([]);
+        this.wellboreSurveyHeadersForPdf.set([]);
         return;
       }
 
-      this.originalWellBoreDataForCharts = data
+      this.originalWellBoreDataForCharts.set(data)
       // this.wellBoreDataForPdfData = data;
 
       const seenDepths = new Set();
-      this.wellBoreDataForPdf = data.wellboreSurveys.map((item: any) => ({
+      this.wellBoreDataForPdf.set(data.wellboreSurveys.map((item: any) => ({
         surveyStatus: SurveyStatus[item.surveyStatus],
         gravAxialRaw: item.gravAxialRaw?.value?.toFixed(2),
         gravTran1Raw: item.gravTran1Raw?.value?.toFixed(2),
@@ -283,9 +284,9 @@ export class ViewReport implements OnInit {
           seenDepths.add(item.measuredDepth);
           return true;
         })
-        .sort((a: any, b: any) => (a.measuredDepth ?? 0) - (b.measuredDepth ?? 0)); // Sort by measured depth
+        .sort((a: any, b: any) => (a.measuredDepth ?? 0) - (b.measuredDepth ?? 0))); // Sort by measured depth
 
-      this.wellboreSurveyHeadersForPdf = [
+      this.wellboreSurveyHeadersForPdf.set([
         { key: 'surveyStatus', label: 'Survey Status', width: '200px' },
         { key: 'serviceCompany', label: 'Survey Company', width: '120px' },
         { key: 'gravAxialRaw', label: 'Grav Axial Raw', unit: this.getUnit('gravAxialRaw'), width: '120px' },
@@ -302,15 +303,15 @@ export class ViewReport implements OnInit {
         { key: 'iFR1ShortCollarAzimuth', label: 'IFR1ShortCollar Azimuth', unit: this.getUnit('ifR1ShortCollarAzimuth'), width: '120px' },
         { key: 'iFR1LongCollarAzimuth', label: 'IFR1LongCollar Azimuth', unit: this.getUnit('ifR1LongCollarAzimuth'), width: '120px' },
         { key: 'toolCode', label: 'Tool Code', width: '120px' },
-      ];
+      ]);
 
-      this.filteredWellBoreDataForPdf = this.wellBoreDataForPdf
+      this.filteredWellBoreDataForPdf.set(this.wellBoreDataForPdf())
       this.loadSurveyChartDataForPdf()
     });
   }
 
   getUnit = (key: string): string => {
-    const surveys = this.originalWellBoreDataForCharts?.wellboreSurveys ?? [];
+    const surveys = this.originalWellBoreDataForCharts()?.wellboreSurveys ?? [];
     for (const survey of surveys) {
       if (survey?.[key]?.valueUnit) {
         return survey[key].valueUnit;
@@ -320,11 +321,11 @@ export class ViewReport implements OnInit {
   };
 
   private getLastNonNullValue(field: string) {
-    if (!Array.isArray(this.wellBoreDataForPdf) || this.wellBoreDataForPdf.length === 0) {
+    if (!Array.isArray(this.wellBoreDataForPdf()) || this.wellBoreDataForPdf().length === 0) {
       return null;
     }
-    for (let i = this.wellBoreDataForPdf.length - 1; i >= 0; i--) {
-      const item = this.wellBoreDataForPdf[i];
+    for (let i = this.wellBoreDataForPdf().length - 1; i >= 0; i--) {
+      const item = this.wellBoreDataForPdf()[i];
       if (item && item[field] !== null && item[field] !== undefined) {
         return item[field];
       }
@@ -340,19 +341,19 @@ export class ViewReport implements OnInit {
 
     let windowContent = '';
     let processedCharts = 0;
-    // showLoader(true, 'Downloading Report');
+    showLoader(true, 'Downloading Report');
 
-    const allCharts = this.chartOptionsForPdfInstances.map((chartInstance, i) => ({
+    const allCharts = this.chartOptionsForPdfInstances().map((chartInstance, i) => ({
       dataUrl: chartInstance.getDataURL({ pixelRatio: 4, backgroundColor: '#fff' }),
-      name: this.wellBoreDataForPdfData[i]?.name || '',
-      isVisible: this.wellBoreDataForPdfData[i]?.isVisible
+      name: this.wellBoreDataForPdfData()[i]?.name || '',
+      isVisible: this.wellBoreDataForPdfData()[i]?.isVisible
     }));
 
     let visibleCharts = allCharts.filter(chart => chart.isVisible);
 
     if (visibleCharts.length === 0) {
       this.generatePdfReport(printContent, contentStartHeder, windowContent, surveys, disclaimer);
-      // showLoader(false);
+      showLoader(false);
       return;
     }
 
@@ -376,21 +377,25 @@ export class ViewReport implements OnInit {
 
       processedCharts++;
 
-      // if (processedCharts === visibleCharts.length) {
-      //   this.generatePdfReport(printContent, contentStartHeder, windowContent, surveys, disclaimer);
-      //   showLoader(false);
-      // }
+      if (processedCharts === visibleCharts.length) {
+        this.generatePdfReport(printContent, contentStartHeder, windowContent, surveys, disclaimer);
+        showLoader(false);
+      }
     });
 
     this.generatePdfReport(printContent, contentStartHeder, windowContent, surveys, disclaimer);
   }
 
   allSurveyChartChartForReportInit(chartInstance: EChartsType, index: number) {
-    this.chartOptionsForPdfInstances[index] = chartInstance;
+    this.chartOptionsForPdfInstances.update(arr => {
+      const updated = [...arr];
+      updated[index] = chartInstance;
+      return updated;
+    });
   }
 
   generateChartOptionsForPdf(): void {
-    this.chartOptionsForPdf = this.wellBoreDataForPdfData.map((chart: any) => ({
+    this.chartOptionsForPdf.set(this.wellBoreDataForPdfData().map((chart: any) => ({
       title: {
         text: chart.name,
         show: false,
@@ -462,20 +467,21 @@ export class ViewReport implements OnInit {
           color: seriesItem.color,
         },
       })),
-    }));
+    })));
     this.buildReportSettingItems();
   }
 
   private buildReportSettingItems(): void {
-    this.reportSettingItems = this.wellBoreDataForPdfData.map((setting) => ({
+    this.reportSettingItems.set(this.wellBoreDataForPdfData().map((setting) => ({
       label: setting.name,
       icon: setting.isVisible ? 'pi pi-check' : undefined,
       command: () => {
         setting.isVisible = !setting.isVisible;
+        this.wellBoreDataForPdfData.update(arr => [...arr]);
         this.buildReportSettingItems();
          this.generateChartOptionsForPdf();
       }
-    }));
+    })));
   }
 
   isValidValue(value: any): boolean {
@@ -483,7 +489,7 @@ export class ViewReport implements OnInit {
   }
 
   loadSurveyChartDataForPdf(): void {
-    this.chartDataArrayForPdf = [];
+    this.chartDataArrayForPdf.set([]);
     const seriesConfig = [
       {
         chartName: 'Depth vs Delta Azimuth',
@@ -577,7 +583,7 @@ export class ViewReport implements OnInit {
       },
     ];
 
-    this.wellBoreDataForPdfData = seriesConfig.map((config) => ({
+    this.wellBoreDataForPdfData.set(seriesConfig.map((config) => ({
       isVisible: true,
       name: config.chartName,
       xAxisName: config.xAxisName,
@@ -586,18 +592,18 @@ export class ViewReport implements OnInit {
         name: seriesItem.name,
         type: 'line',
         color: seriesItem.color,
-        data: this.wellBoreDataForPdf.map((item: any) => ({
+        data: this.wellBoreDataForPdf().map((item: any) => ({
           x: item.measuredDepth ?? '',
           y: this.formatAzimuth(item[seriesItem.yField]),
         })),
       })),
-    }));
+    })));
     this.generateChartOptionsForPdf()
   }
 
   formatAzimuth(value: number | undefined): number {
     if (value === undefined || isNaN(value)) return NaN;
-    switch (Number(this.selectedAzimuthType)) {
+    switch (Number(this.selectedAzimuthType())) {
       case 1: // -180° to 180°
         return value > 180 ? value - 360 : value;
       case 2: // 0° to 360°
@@ -612,11 +618,11 @@ export class ViewReport implements OnInit {
     return Array.isArray(formattedNames) ? formattedNames.join(', ') : formattedNames;
   }
 
-  public isShowAutoApprovedSurveyEnable: boolean = false;
+  public isShowAutoApprovedSurveyEnable = signal<boolean>(false);
   showAutoApprovedSurvey(): void {
-    this.filteredWellBoreDataForPdf = this.isShowAutoApprovedSurveyEnable
-      ? this.wellBoreDataForPdf.filter((x: any) => x.surveyStatus === "AutoApproved")
-      : [...this.wellBoreDataForPdf];
+    this.filteredWellBoreDataForPdf.set(this.isShowAutoApprovedSurveyEnable()
+      ? this.wellBoreDataForPdf().filter((x: any) => x.surveyStatus === "AutoApproved")
+      : [...this.wellBoreDataForPdf()]);
   }
 
   generatePdfReport(
@@ -673,7 +679,7 @@ export class ViewReport implements OnInit {
       pdfWrapper.appendChild(disclaimer.cloneNode(true));
     }
 
-    const fileName = `Report_${this.wellDataForPdf?.wellboreInfo?.wellboreId?.value || 'Well'}.pdf`;
+    const fileName = `Report_${this.wellDataForPdf()?.wellboreInfo?.wellboreId?.value || 'Well'}.pdf`;
 
     const pdfOptions: any = {
       margin: 0,

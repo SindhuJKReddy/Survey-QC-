@@ -15,7 +15,7 @@
         styleClass="chart-autocomplete"
         panelStyleClass="chart-autocomplete-panel"
         [(ngModel)]="selectedChartOption"
-        [suggestions]="filteredChartOptions"
+        [suggestions]="filteredChartOptions()"
         (completeMethod)="filterChartOptions($event)"
         field="label"
         (onSelect)="onChartSelectionChange($event)"
@@ -28,10 +28,10 @@
   </div>
 
   <div class="charts-canvas">
-    <div *ngIf="isLoading" class="loading-overlay">
+    <div *ngIf="isLoading()" class="loading-overlay">
       <p-progressSpinner strokeWidth="4" fill="transparent" animationDuration=".5s"></p-progressSpinner>
     </div>
 
-    <div echarts [options]="chartOption" class="w-full h-full"></div>
+    <div echarts [options]="chartOption()" class="w-full h-full"></div>
   </div>
 </div>

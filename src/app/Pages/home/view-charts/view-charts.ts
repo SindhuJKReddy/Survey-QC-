@@ -1,4 +1,4 @@
-import { Component, computed, OnInit, OnDestroy, signal } from '@angular/core';
+import { Component, computed, OnInit, OnDestroy, signal, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { Subject, takeUntil } from 'rxjs';
@@ -75,43 +75,45 @@ export class ViewCharts {
 
     console.log("Calling Survey API with:", wellboreId);
 
+    showLoader(true, 'Retrieving Charts...');
+
     this.communicationService.getWellboreSurveys(wellboreId).subscribe({
 
       next: (data) => {
+
+        showLoader(false);
         console.log("Survey API response:", data);
-        this.wellBoreResponse = data;
+        this.wellBoreResponse.set(data);
 
         this.processSurveyData(data?.wellboreSurveys || []);
         this.updateChartDisplay();
-
-        // this.isLoading = false;
-
-        // console.log("Hiding loader");
-
-        // showLoader(false);
       },
+
       error: (err) => {
         console.error("Survey API error:", err);
-
-        // this.isLoading = false;
-        // showLoader(false);
       }
     });
   }
 
-  public wellBoreResponse: any;
-  public chartOption!: EChartsOption;
-  public wellboreSurveyChartData: any[] = [];
-  public chartDataArray: any[] = [];
-  public isLoading: boolean = false;
+  public wellBoreResponse = signal<any>(null);
+  public chartOption = signal<EChartsOption>({
+    xAxis: { show: false },
+    yAxis: { show: false },
+    series: []
+  });
+  public wellboreSurveyChartData = signal<any[]>([]);
+  public chartDataArray = signal<any[]>([]);
+  public isLoading = signal<boolean>(false);
 
   public xAxisConfig = new DefaultXAxisConfiguration();
   public yAxisConfig = new DefaultYAxisConfiguration();
 
-  public selectedChartIndex: number = 5;
-  public selectedAzimuthType: number = 2;
-  public selectedChartOption: { label: string; value: number } | null = null;
-  public filteredChartOptions: { label: string; value: number }[] = [];
+  public selectedChartIndex = signal<number>(5);
+  public selectedAzimuthType = signal<number>(2);
+  private _selectedChartOption = signal<{ label: string; value: number } | null>(null);
+  get selectedChartOption() { return this._selectedChartOption(); }
+  set selectedChartOption(value: { label: string; value: number } | null) { this._selectedChartOption.set(value); }
+  public filteredChartOptions = signal<{ label: string; value: number }[]>([]);
 
   public readonly azimuthOptions = [
     { label: '0° - 360°', value: 2 },
@@ -131,36 +133,26 @@ export class ViewCharts {
     { label: 'Depth vs BTotal', value: 4 }
   ];
 
+  private communicationService = inject(CommunicationService);
+  public commonService = inject(CommonService);
+  private router = inject(Router)
+
   constructor(
-    private communicationService: CommunicationService,
-    public commonService: CommonService,
-    private router: Router
   ) {
-    this.chartOption = {
-      title: {
-        text: 'Loading chart...',
-        left: 'center',
-        top: 'middle',
-        textStyle: { color: '#cfcfcf', fontSize: 14 }
-      },
-      xAxis: { show: false },
-      yAxis: { show: false },
-      series: []
-    };
-    this.filteredChartOptions = [...this.chartMenuOptions];
-    this.selectedChartOption = this.chartMenuOptions.find(option => option.value === this.selectedChartIndex) ?? null;
+    this.filteredChartOptions.set([...this.chartMenuOptions]);
+    this.selectedChartOption = this.chartMenuOptions.find(option => option.value === this.selectedChartIndex()) ?? null;
   }
 
   public filterChartOptions(event: any): void {
     const query = (event?.query ?? '').toLowerCase().trim();
     if (!query) {
-      this.filteredChartOptions = [...this.chartMenuOptions];
+      this.filteredChartOptions.set([...this.chartMenuOptions]);
       return;
     }
 
-    this.filteredChartOptions = this.chartMenuOptions.filter(option =>
+    this.filteredChartOptions.set(this.chartMenuOptions.filter(option =>
       option.label.toLowerCase().includes(query)
-    );
+    ));
   }
 
   public onChartSelectionChange(event: any): void {
@@ -170,7 +162,7 @@ export class ViewCharts {
     }
 
     this.selectedChartOption = selected;
-    this.selectedChartIndex = selected.value;
+    this.selectedChartIndex.set(selected.value);
     this.updateChartDisplay();
   }
 
@@ -195,11 +187,6 @@ export class ViewCharts {
 
     this.currentWellboreId.set(wellboreId);
 
-    // showLoader(true, 'Retrieving Surveys...');
-    // this.isLoading = true;
-
-    //fror loader to show up before processing data
-
     if (this.hasFacLimits()) {
       this.fetchSurveysAndRender(wellboreId);
       return;
@@ -222,7 +209,7 @@ export class ViewCharts {
     const seenDepths = new Set();
     const config = this.commonService.facConfiguration ?? {};
 
-    this.wellboreSurveyChartData = surveys
+    this.wellboreSurveyChartData.set(surveys
       .map(item => ({
         measuredDepth: item.measuredDepth?.value ?? null,
         azimuth: item.azimuth?.value ?? null,
@@ -252,7 +239,7 @@ export class ViewCharts {
         seenDepths.add(item.measuredDepth);
         return true;
       })
-      .sort((a, b) => a.measuredDepth - b.measuredDepth);
+      .sort((a, b) => a.measuredDepth - b.measuredDepth));
   }
 
   public updateChartDisplay(): void {
@@ -261,7 +248,7 @@ export class ViewCharts {
   }
 
   private buildChartConfigs(): void {
-    const surveys = this.wellBoreResponse?.wellboreSurveys || [];
+    const surveys = this.wellBoreResponse()?.wellboreSurveys || [];
     const getUnit = (key: string) => surveys.find((s: any) => s?.[key]?.valueUnit)?.[key]?.valueUnit || '';
     const limits = this.commonService.facConfiguration ?? {};
 
@@ -350,19 +337,19 @@ export class ViewCharts {
 
     const depthUnit = getUnit('measuredDepth');
 
-    this.chartDataArray = definitions.map(def => ({
+    this.chartDataArray.set(definitions.map(def => ({
       name: def.title,
       xAxisName: `Measured Depth (${depthUnit})`,
       yAxisName: def.yAxis,
       series: def.series.map(s => ({
         name: s.name,
         color: s.color,
-        data: this.wellboreSurveyChartData.map(d => ({
+        data: this.wellboreSurveyChartData().map(d => ({
           x: d.measuredDepth,
           y: this.formatAzimuthValue(d[s.field], def.title)
         }))
       }))
-    }));
+    })));
   }
 
   private formatAzimuthValue(value: any, chartTitle: string): number {
@@ -370,16 +357,16 @@ export class ViewCharts {
 
     if (!chartTitle.toLowerCase().includes('azimuth')) return value;
 
-    const type = Number(this.selectedAzimuthType);
+    const type = Number(this.selectedAzimuthType());
     if (type === 1) return value > 180 ? value - 360 : value;
     if (type === 2) return value < 0 ? value + 360 : value;
     return value;
   }
 
   private renderSelectedChart(): void {
-    const data = this.chartDataArray[this.selectedChartIndex];
+    const data = this.chartDataArray()[this.selectedChartIndex()];
     if (!data) {
-      this.chartOption = {
+      this.chartOption.set({
         title: {
           text: 'No chart data available',
           left: 'center',
@@ -389,14 +376,14 @@ export class ViewCharts {
         xAxis: { show: false },
         yAxis: { show: false },
         series: []
-      };
+      });
       return;
     }
 
     const textColor = this.yAxisConfig.splitLine.lineStyle.color || '#ffffff';
     const isDeltaChart = data.name.toLowerCase().includes('delta');
 
-    this.chartOption = {
+    this.chartOption.set({
       backgroundColor: 'transparent',
       legend: {
         show: true,
@@ -408,10 +395,10 @@ export class ViewCharts {
         icon: 'roundRect'
       },
       grid: {
-        left: '80px',
-        right: '20px',
+        left: '100px',
+        right: '10px',
         bottom: '80px',
-        top: '40px'
+        top: '30px'
       },
       tooltip: {
         trigger: 'axis',
@@ -428,14 +415,19 @@ export class ViewCharts {
           return res;
         }
       },
+      animation: false,
       xAxis: {
         type: 'category',
         name: data.xAxisName,
-        nameLocation: 'middle',
+        nameLocation: this.xAxisConfig.nameLocation,
         nameGap: 30,
         data: data.series[0].data.map((d: any) => d.x),
         axisLabel: { color: textColor },
-        axisLine: { lineStyle: { color: '#444' } },
+        axisLine: {
+          lineStyle: {
+            color: '#eee'
+          }
+        },
         splitLine: {
           show: this.xAxisConfig.splitLine.show,
           lineStyle: { color: this.xAxisConfig.splitLine.lineStyle.color }
@@ -444,11 +436,15 @@ export class ViewCharts {
       yAxis: {
         type: 'value',
         name: data.yAxisName,
-        nameLocation: 'middle',
-        nameGap: 50,
+        nameLocation: this.yAxisConfig.nameLocation,
+        nameGap: 25,
         min: isDeltaChart ? 0 : undefined,
         axisLabel: { color: textColor },
-        axisLine: { lineStyle: { color: '#444' } },
+        axisLine: {
+          lineStyle: {
+            color: '#eee'
+          }
+        },
         splitLine: {
           show: this.yAxisConfig.splitLine.show,
           lineStyle: { color: this.yAxisConfig.splitLine.lineStyle.color }
@@ -458,39 +454,75 @@ export class ViewCharts {
         {
           type: 'slider',
           xAxisIndex: 0,
-          height: 15,
-          left: 80,
-          right: 20,
+          height: 8,
           bottom: 10,
-          borderColor: '#4a5869',
-          backgroundColor: 'rgba(19, 31, 45, 0.82)',
-          fillerColor: 'rgba(117, 132, 173, 0.58)',
-          moveHandleStyle: {
-            color: '#8ea3d9'
+          filterMode: 'none',
+          brushSelect: false,
+          handleIcon: 'path://M 4 1 L 4 5 L 6 5 L 6 1 L 4 1',
+          handleSize: '100%',
+          handleStyle: {
+            color: 'rgba(160, 160, 160, 0.3)', 
+            borderColor: 'rgba(160, 160, 160, 0.4)'
           },
           textStyle: {
-            color: '#b9c7d8'
-          }
+            color: '#a0a0a0' 
+          },
+          fillerColor: 'rgba(160, 160, 160, 0.1)', 
+          borderColor: 'rgba(160, 160, 160, 0.1)',
+          backgroundColor: 'rgba(160, 160, 160, 0.05)', 
+          dataBackground: {
+            lineStyle: {
+              opacity: 0,
+            },
+            areaStyle: {
+              opacity: 0,
+            },
+          },
+          selectedDataBackground: {
+            lineStyle: {
+              color: '#a0a0a0'
+            },
+            areaStyle: {
+              color: 'rgba(160, 160, 160, 0.08)' 
+            }
+          },
         },
-        { type: 'inside', xAxisIndex: 0 },
         {
           type: 'slider',
           yAxisIndex: 0,
+          left: 20,
           width: 8,
-          left: 18,
-          top: 40,
-          bottom: 80,
-          borderColor: '#4a5869',
-          backgroundColor: 'rgba(19, 31, 45, 0.82)',
-          fillerColor: 'rgba(117, 132, 173, 0.58)',
-          moveHandleStyle: {
-            color: '#4a5869'
+          filterMode: 'none',
+          brushSelect: false,
+          handleIcon: 'path://M 4 1 L 4 5 L 6 5 L 6 1 L 4 1',
+          handleSize: '100%',
+          handleStyle: {
+            color: 'rgba(160, 160, 160, 0.3)', 
+            borderColor: 'rgba(160, 160, 160, 0.4)'
           },
           textStyle: {
-            color: '#b9c7d8'
-          }
+            color: '#a0a0a0'
+          },
+          fillerColor: 'rgba(160, 160, 160, 0.1)',
+          borderColor: 'rgba(160, 160, 160, 0.1)',
+          backgroundColor: 'rgba(160, 160, 160, 0.05)', 
+          dataBackground: {
+            lineStyle: {
+              opacity: 0,
+            },
+            areaStyle: {
+              opacity: 0,
+            },
+          },
+          selectedDataBackground: {
+            lineStyle: {
+              color: '#a0a0a0'
+            },
+            areaStyle: {
+              color: 'rgba(160, 160, 160, 0.08)' 
+            }
+          },
         },
-        { type: 'inside', yAxisIndex: 0 }
       ],
       series: data.series.map((s: any) => ({
         name: s.name,
@@ -500,7 +532,6 @@ export class ViewCharts {
         connectNulls: true,
         data: s.data.map((d: any) => d.y)
       }))
-    };
+    });
   }
-
 }

@@ -117,7 +117,7 @@
 }
  
 .footer-wrapper {
-  margin-top: auto; /* Ensures footer stays at the bottom */
+  margin-top: auto; 
 }
  
 .survey-heading {
@@ -145,7 +145,7 @@
   display: flex;
   justify-content: space-around;
   padding: 4px 4px;
-  background: #16222e; /* Slightly darker than content */
+  background: #16222e; 
 }
  
 .label-column {
@@ -207,8 +207,35 @@
   background: #18a764 !important;
   border-color: #18a764 !important;
 }
- 
-/* Responsive fixes */
+
+:host ::ng-deep .p-tooltip {
+  max-width: fit-content !important;
+}
+
+:host ::ng-deep .p-tooltip .p-tooltip-text {
+  background: #ffffff !important;
+  color: #000000 !important;
+  padding: 4px 8px !important;
+  font-size: 11px !important;
+  border-radius: 0 !important;
+}
+
+:host ::ng-deep .p-tooltip-arrow {
+  border-top-color: #ffffff !important;
+}
+
+:host ::ng-deep .p-tooltip.p-tooltip-right .p-tooltip-arrow {
+  border-right-color: #ffffff !important;
+}
+
+:host ::ng-deep .p-tooltip.p-tooltip-left .p-tooltip-arrow {
+  border-left-color: #ffffff !important;
+}
+
+:host ::ng-deep .p-tooltip.p-tooltip-bottom .p-tooltip-arrow {
+  border-bottom-color: #ffffff !important;
+}
+
 @media (max-width: 1200px) {
   .dashboard-grid {
     grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
